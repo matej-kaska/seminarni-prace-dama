@@ -4,7 +4,6 @@ class Piece:
     def __init__(self, color, x, y):
         self._color = color
         self._defaultColor = color
-        self._draging = False
 
     def draw_piece(self, square, win):
         pygame.draw.ellipse(

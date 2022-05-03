@@ -43,7 +43,6 @@ def main():
                 if board.squares[y][x].piece is not None:
                     board.squares[y][x].piece._color = YELLOW
                     selected = True
-
         board.draw_board(WIN)
         pygame.display.update()
 

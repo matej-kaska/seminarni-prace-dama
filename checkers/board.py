@@ -39,4 +39,7 @@ class Board:
     def draw_board(self, win):
         for i in range(ROWS):
             for j in range(COLS):
-                self._squares[i][j].draw_square(win)   
+                self._squares[i][j].draw_square(win)
+
+    def despawn_piece(self, y, x):
+        self._squares[y][x].piece = None
