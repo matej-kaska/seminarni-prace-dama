@@ -1,8 +1,10 @@
 import pygame
 
 class Piece:
-    def __init__(self, color):
+    def __init__(self, color, x, y):
         self._color = color
+        self._defaultColor = color
+        self._draging = False
 
     def draw_piece(self, square, win):
         pygame.draw.ellipse(
@@ -13,3 +15,5 @@ class Piece:
             square.size / 5 * 3,
             square.size / 5 * 3)
             )
+    
+    

@@ -23,18 +23,18 @@ class Board:
                     self._squares[i][j] = Square(j, i, WHITE if j % 2 == 0 else BLACK)
                     # add pieces to their correct starting pos
                     if i < 3 and j % 2 == 1:
-                        self._squares[i][j].piece = Piece(RED)
+                        self._squares[i][j].piece = Piece(RED, i, j)
                     elif i > 4 and j % 2 == 1:
-                        self._squares[i][j].piece = Piece(BLUE)
+                        self._squares[i][j].piece = Piece(BLUE, i, j)
                 # if row is odd
                 elif i % 2 == 1:
                     # add white square if col is odd else add black one
                     self._squares[i][j] = Square(j, i, WHITE if j % 2 == 1 else BLACK)
                     # add pieces to their correct starting pos
                     if i < 3 and j % 2 == 0:
-                        self._squares[i][j].piece = Piece(RED)
+                        self._squares[i][j].piece = Piece(RED, i, j)
                     elif i > 4 and j % 2 == 0:
-                        self._squares[i][j].piece = Piece(BLUE)
+                        self._squares[i][j].piece = Piece(BLUE, i, j)
 
     def draw_board(self, win):
         for i in range(ROWS):
