@@ -40,6 +40,7 @@ def main():
                 x, y = pygame.mouse.get_pos()
                 x = math.floor(x / SQUARE_SIZE)
                 y = math.floor(y / SQUARE_SIZE)
+                board_click(x, y)
                 if board.squares[y][x].piece is not None:
                     board.squares[y][x].piece._color = YELLOW
                     selected = True
@@ -50,8 +51,7 @@ def main():
 
 def board_click(x, y):
     print(y, x)
-    print(board.squares[y][x].piece._x)
-    print(board.squares[y][x].piece._y)
+    print(board.squares[y][x].label)
 
 if __name__ == "__main__":
     main()

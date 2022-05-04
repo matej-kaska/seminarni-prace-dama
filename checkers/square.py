@@ -9,6 +9,7 @@ class Square:
         self._size = SQUARE_SIZE
         self._piece = None
         self._selected = False
+        self._label = None
 
     @property
     def x(self):
@@ -37,6 +38,14 @@ class Square:
     @selected.setter
     def selected(self, val):
         self._selected = val
+
+    @property
+    def label(self):
+        return self._label
+    
+    @label.setter
+    def label(self, val):
+        self._label = val
 
     def draw_square(self, win):
         pygame.draw.rect(win, self._color, (self._x * self._size, self._y * self._size, self._size, self._size))

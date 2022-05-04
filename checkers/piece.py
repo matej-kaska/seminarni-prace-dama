@@ -1,7 +1,7 @@
 import pygame
 
 class Piece:
-    def __init__(self, color, x, y):
+    def __init__(self, color):
         self._color = color
         self._defaultColor = color
 
