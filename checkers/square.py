@@ -47,6 +47,10 @@ class Square:
     def label(self, val):
         self._label = val
 
+    @property
+    def color(self):
+        return self._color
+
     def draw_square(self, win):
         pygame.draw.rect(win, self._color, (self._x * self._size, self._y * self._size, self._size, self._size))
 
