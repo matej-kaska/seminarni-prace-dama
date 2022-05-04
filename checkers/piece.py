@@ -14,5 +14,3 @@ class Piece:
             square.size / 5 * 3,
             square.size / 5 * 3)
             )
-    
-    
