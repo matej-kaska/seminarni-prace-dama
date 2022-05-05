@@ -51,7 +51,7 @@ class Board:
                         elif dict[label] == "bb":
                             self._squares[i][j].piece = King(CRIMSON)
                         elif dict[label] == "w":
-                            self._squares[i][j].piece = Piece(RED)
+                            self._squares[i][j].piece = Piece(BLUE)
                         elif dict[label] == "ww":
                             self._squares[i][j].piece = King(AQUA)    
         except:
