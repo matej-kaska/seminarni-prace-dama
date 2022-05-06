@@ -21,10 +21,10 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                
+
                 if selected == True:
                     if board.squares[y][x].piece is not None:
-                        board.squares[y][x].piece._color = board.squares[y][x].piece._defaultColor
+                        board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
                         BeforeY = y
                         BeforeX = x
                         x, y = pygame.mouse.get_pos()
@@ -33,7 +33,7 @@ def main():
                         if board.squares[y][x].piece is None:
                             board.squares[y][x].piece = board.squares[BeforeY][BeforeX].piece
                             board.squares[BeforeY][BeforeX].piece = None
-                            board.squares[y][x].piece._color = board.squares[y][x].piece._defaultColor
+                            board.squares[y][x].piece._color = board.squares[y][x].piece.default_color
                             selected = False
                             break
 
@@ -42,7 +42,7 @@ def main():
                 y = math.floor(y / SQUARE_SIZE)
                 board_click(x, y)
                 if board.squares[y][x].piece is not None:
-                    board.squares[y][x].piece._color = YELLOW
+                    board.squares[y][x].piece.color = YELLOW
                     selected = True
         board.draw_board(WIN)
         pygame.display.update()

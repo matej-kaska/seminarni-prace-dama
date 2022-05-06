@@ -1,6 +1,6 @@
-from .constants import BLACK, WHITE, RED, BLUE, ROWS, COLS, AQUA, CRIMSON
+from .constants import BLACK, WHITE, ROWS, COLS, AQUA, CRIMSON
 from .square import Square
-from .piece import Piece
+from .man import Man
 from .king import King
 import csv
 
@@ -37,7 +37,7 @@ class Board:
 
     def __add_pieces_from_csv(self):
         try:
-            file = open('data.csv')
+            file = open('data-.csv')
             csvreader = csv.reader(file)
             dict = { rows[0].strip():rows[1].strip() for rows in csvreader if rows }        
             if len(dict) > 24: raise Exception("Too many pieces")                 
@@ -47,11 +47,11 @@ class Board:
                     label = self._squares[i][j].label
                     if label in dict and self._squares[i][j].color == BLACK:
                         if dict[label] == "b":
-                            self._squares[i][j].piece = Piece(RED)
+                            self._squares[i][j].piece = Man(CRIMSON)
                         elif dict[label] == "bb":
                             self._squares[i][j].piece = King(CRIMSON)
                         elif dict[label] == "w":
-                            self._squares[i][j].piece = Piece(BLUE)
+                            self._squares[i][j].piece = Man(AQUA)
                         elif dict[label] == "ww":
                             self._squares[i][j].piece = King(AQUA)    
         except:
@@ -63,14 +63,14 @@ class Board:
             for j in range(COLS):
                 if i % 2 == 0:
                     if i < 3 and j % 2 == 1:
-                        self._squares[i][j].piece = Piece(RED)
+                        self._squares[i][j].piece = Man(CRIMSON)
                     elif i > 4 and j % 2 == 1:
-                        self._squares[i][j].piece = Piece(BLUE)
+                        self._squares[i][j].piece = Man(AQUA)
                 elif i % 2 == 1:
                     if i < 3 and j % 2 == 0:
-                        self._squares[i][j].piece = Piece(RED)
+                        self._squares[i][j].piece = Man(CRIMSON)
                     elif i > 4 and j % 2 == 0:
-                        self._squares[i][j].piece = Piece(BLUE)
+                        self._squares[i][j].piece = Man(AQUA)
 
     def draw_board(self, win):
         for i in range(ROWS):
