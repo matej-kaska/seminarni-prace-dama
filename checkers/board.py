@@ -7,6 +7,7 @@ import csv
 class Board:
     def __init__(self):
         self._squares = [[0 for _ in range(COLS)] for _ in range(ROWS)] # empty 2D list
+        self.__create_board()
 
     @property
     def squares(self):
@@ -16,7 +17,7 @@ class Board:
     def squares(self, val):
         self._squares = val
 
-    def create_board(self):
+    def __create_board(self):
         self.__add_squares() # _ = protected | __ = private
         self.__add_labels()
         self.__add_pieces_from_csv()

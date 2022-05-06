@@ -8,7 +8,6 @@ class Square:
         self._color = color
         self._size = SQUARE_SIZE
         self._piece = None
-        self._selected = False
         self._label = None
 
     @property
@@ -30,14 +29,6 @@ class Square:
     @piece.setter
     def piece(self, val):
         self._piece = val
-        
-    @property
-    def selected(self):
-        return self._selected
-
-    @selected.setter
-    def selected(self, val):
-        self._selected = val
 
     @property
     def label(self):
