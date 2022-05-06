@@ -37,7 +37,7 @@ class Board:
 
     def __add_pieces_from_csv(self):
         try:
-            file = open('data-.csv')
+            file = open('data.csv')
             csvreader = csv.reader(file)
             dict = { rows[0].strip():rows[1].strip() for rows in csvreader if rows }        
             if len(dict) > 24: raise Exception("Too many pieces")                 

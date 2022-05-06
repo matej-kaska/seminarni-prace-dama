@@ -1,6 +1,7 @@
 import pygame
 from .piece import Piece
-from anytree import Node, RenderTree, PreOrderIter
+from .constants import AQUA, CRIMSON
+from anytree import Node, PreOrderIter
 
 class Man(Piece):
     @property
@@ -29,9 +30,23 @@ class Man(Piece):
             square.size / 5 * 3)
             )
 
-    def get_possible_moves(self, pos):
-        #Zalozeni stromu ->
-        a = Node(pos)
+    def get_possible_moves(self, y, x, board):
+        root = None
+        root = Node(str(y) + str(x))
         #Logika (for) - pokud ano, tak ->
-        #b = Node("A6", parent=a) #last_charac = chr(ord(last_charac) + 1)
-        #return [node.name for node in PreOrderIter(1)]
+        if board.squares[y][x].piece is not None:
+            if self.default_color == AQUA:
+                if x + 1 < 8:
+                    if board.squares[y-1][x+1].piece is None:
+                        new = Node(str(y-1) + str(x+1), parent=root)
+                if y - 1 > -2:
+                    if board.squares[y-1][x-1].piece is None and x-1 >= 0:
+                        new = Node(str(y-1) + str(x-1), parent=root)
+            if self.default_color == CRIMSON:
+                if x + 1 < 8:
+                    if board.squares[y+1][x+1].piece is None:
+                        new = Node(str(y+1) + str(x+1), parent=root)
+                if y - 1 > -2:
+                    if board.squares[y+1][x-1].piece is None and x-1 >= 0:
+                        new = Node(str(y+1) + str(x-1), parent=root)
+            return [node.name for node in PreOrderIter(root)]

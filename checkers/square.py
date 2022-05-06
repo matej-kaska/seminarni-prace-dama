@@ -1,5 +1,5 @@
 import pygame
-from .constants import SQUARE_SIZE
+from .constants import SQUARE_SIZE, YELLOW
 
 class Square:
     def __init__(self, x, y, color):
@@ -50,6 +50,10 @@ class Square:
     @property
     def color(self):
         return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = val
 
     def draw_square(self, win):
         pygame.draw.rect(win, self._color, (self._x * self._size, self._y * self._size, self._size, self._size))
