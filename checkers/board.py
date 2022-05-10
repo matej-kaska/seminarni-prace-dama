@@ -62,13 +62,13 @@ class Board:
                     label = self._squares[i][j].label
                     if label in dict and self._squares[i][j].color == BLACK:
                         if dict[label] == "b":
-                            self._squares[i][j].piece = Man(CRIMSON)
+                            self._squares[i][j].piece = Man(CRIMSON, "b")
                         elif dict[label] == "bb":
-                            self._squares[i][j].piece = King(CRIMSON)
+                            self._squares[i][j].piece = King(CRIMSON, "b")
                         elif dict[label] == "w":
-                            self._squares[i][j].piece = Man(AQUA)
+                            self._squares[i][j].piece = Man(AQUA, "w")
                         elif dict[label] == "ww":
-                            self._squares[i][j].piece = King(AQUA)    
+                            self._squares[i][j].piece = King(AQUA, "w")    
         except:
             print("Wrong csv file format - switched to default game")
             self.__add_default_pieces()
@@ -78,14 +78,14 @@ class Board:
             for j in range(COLS):
                 if i % 2 == 0:
                     if i < 3 and j % 2 == 1:
-                        self._squares[i][j].piece = Man(CRIMSON)
+                        self._squares[i][j].piece = Man(CRIMSON, "b")
                     elif i > 4 and j % 2 == 1:
-                        self._squares[i][j].piece = Man(AQUA)
+                        self._squares[i][j].piece = Man(AQUA, "w")
                 elif i % 2 == 1:
                     if i < 3 and j % 2 == 0:
-                        self._squares[i][j].piece = Man(CRIMSON)
+                        self._squares[i][j].piece = Man(CRIMSON, "b")
                     elif i > 4 and j % 2 == 0:
-                        self._squares[i][j].piece = Man(AQUA)
+                        self._squares[i][j].piece = Man(AQUA, "w")
 
     def draw_board(self, win):
         for i in range(ROWS):

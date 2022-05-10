@@ -13,6 +13,14 @@ class Man(Piece):
         self._color = val
 
     @property
+    def team(self):
+        return self._team
+
+    @team.setter
+    def team(self, val):
+        self._team = val
+
+    @property
     def default_color(self):
         return self._default_color
 
@@ -33,12 +41,12 @@ class Man(Piece):
     def get_possible_moves(self, y, x, board):
         root = Node(str(y) + str(x))
         if board.squares[y][x].piece is not None:
-            if self.default_color == AQUA:
+            if self.team == "w":
                 if y - 1 >= 0 and x + 1 < COLS:
                     if board.squares[y-1][x+1].piece is None:
                         Node(str(y-1) + str(x+1), parent=root)
                     elif y - 2 >= 0 and x + 2 < COLS:
-                        if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.color == CRIMSON:
+                        if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.team == "b":
                             Node(str(y-2) + str(x+2) + str(y-1) + str(x+1), parent=root)
                             self.chaining(y-2, x+2, board)
 
@@ -46,23 +54,23 @@ class Man(Piece):
                     if board.squares[y-1][x-1].piece is None:
                         Node(str(y-1) + str(x-1), parent=root)
                     elif y - 2 >= 0 and x - 2 >= 0:
-                        if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.color == CRIMSON:
+                        if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.team == "b":
                             Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=root)
-                            self.chaining(y-2, x+2, board)
+                            self.chaining(y-2, x-2, board)
 
-            if self.default_color == CRIMSON:
+            if self.team == "b":
                 if y + 1 < ROWS and x + 1 < COLS:
                     if board.squares[y+1][x+1].piece is None:
                         Node(str(y+1) + str(x+1), parent=root)
                     elif y + 2 < ROWS and x + 2 < COLS:
-                        if board.squares[y+2][x+2].piece is None and board.squares[y+1][x+1].piece.color == AQUA:
+                        if board.squares[y+2][x+2].piece is None and board.squares[y+1][x+1].piece.team == "w":
                             Node(str(y+2) + str(x+2) + str(y+1) + str(x+1), parent=root)
 
                 if y + 1 < ROWS and x - 1 >= 0:
                     if board.squares[y+1][x-1].piece is None:
                         Node(str(y+1) + str(x-1), parent=root)
                     elif y + 2 < ROWS and x - 2 >= 0:
-                        if board.squares[y+2][x-2].piece is None and board.squares[y+1][x-1].piece.color == AQUA:
+                        if board.squares[y+2][x-2].piece is None and board.squares[y+1][x-1].piece.team == "w":
                             Node(str(y+2) + str(x-2) + str(y+1) + str(x-1), parent=root)
 
             print(RenderTree(root))
@@ -75,22 +83,20 @@ class Man(Piece):
         while fronta:
             y = int(fronta[0][0])
             x = int(fronta[0][1])
-            if self.default_color == AQUA:
-                if y - 2 >= 0 and x + 2 < COLS:
-                    if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.color == CRIMSON:
+            print(str(x) + str(y))
+            if self.team == "w":
+                if y - 2 >= 0 and x + 2 < COLS and board.squares[y-1][x+1].piece is not None:
+                    print("b")
+                    if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.team == "b":
                         chains.append(str(y-2) + str(x+2))
                         fronta.append(str(y-2) + str(x+2))
-                        if board.squares[y-2][x].piece is None:
-                            chains.append(str(y-2) + str(x))
-                            fronta.append(str(y-2) + str(x))   
 
-                if y - 2 >= 0 and x - 2 >= 0:
-                    if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.color == CRIMSON:
+                if y - 2 >= 0 and x - 2 >= 0 and board.squares[y-1][x-1].piece is not None:
+                    print("a")
+                    if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.team == "b":
                         chains.append(str(y-2) + str(x-2))
                         fronta.append(str(y-2) + str(x-2))
-                        if board.squares[y-2][x].piece is None:
-                            chains.append(str(y-2) + str(x))
-                            fronta.append(str(y-2) + str(x)) 
+
             fronta.pop(0)
             
         print("chains: " + str(chains))
