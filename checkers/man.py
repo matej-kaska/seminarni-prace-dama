@@ -1,7 +1,10 @@
 import pygame
 from .piece import Piece
 from .constants import AQUA, CRIMSON, ROWS, COLS
-from anytree import Node, PreOrderIter, RenderTree
+from anytree import Node, PreOrderIter, RenderTree, search
+
+y = 0
+x = 0
 
 class Man(Piece):
     @property
@@ -48,7 +51,7 @@ class Man(Piece):
                     elif y - 2 >= 0 and x + 2 < COLS:
                         if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.team == "b":
                             Node(str(y-2) + str(x+2) + str(y-1) + str(x+1), parent=root)
-                            self.chaining(y-2, x+2, board)
+                            self.chaining(y-2, x+2, board, root)
 
                 if y - 1 >= 0 and x - 1 >= 0:
                     if board.squares[y-1][x-1].piece is None:
@@ -56,7 +59,7 @@ class Man(Piece):
                     elif y - 2 >= 0 and x - 2 >= 0:
                         if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.team == "b":
                             Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=root)
-                            self.chaining(y-2, x-2, board)
+                            self.chaining(y-2, x-2, board, root)
 
             if self.team == "b":
                 if y + 1 < ROWS and x + 1 < COLS:
@@ -76,27 +79,21 @@ class Man(Piece):
             print(RenderTree(root))
             return [node.name for node in PreOrderIter(root)]
         
-    def chaining(self, y, x, board):
-        chains=[]
+    def chaining(self, y, x, board, root):
         fronta=[]
         fronta.append(str(y) + str(x))
         while fronta:
             y = int(fronta[0][0])
             x = int(fronta[0][1])
-            print(str(x) + str(y))
             if self.team == "w":
                 if y - 2 >= 0 and x + 2 < COLS and board.squares[y-1][x+1].piece is not None:
-                    print("b")
                     if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.team == "b":
-                        chains.append(str(y-2) + str(x+2))
+                        Node(str(y-2) + str(x+2) + str(y+1) + str(x-1), parent=search.find_by_attr(root, str(y) + str(x) + str(y+1) + str(x-1)))
                         fronta.append(str(y-2) + str(x+2))
 
                 if y - 2 >= 0 and x - 2 >= 0 and board.squares[y-1][x-1].piece is not None:
-                    print("a")
                     if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.team == "b":
-                        chains.append(str(y-2) + str(x-2))
+                        Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=search.find_by_attr(root, str(y) + str(x) + str(y+1) + str(x+1)))
                         fronta.append(str(y-2) + str(x-2))
 
             fronta.pop(0)
-            
-        print("chains: " + str(chains))
