@@ -77,7 +77,19 @@ class Man(Piece):
                             Node(str(y+2) + str(x-2) + str(y+1) + str(x-1), parent=root)
 
             print(RenderTree(root))
-            return [node.name for node in PreOrderIter(root)]
+            possible_moves=[]
+            possible_moves.append(str(y) + str(x))
+            s = str(root.leaves)
+            print(s)
+            for i in range(s.count("')")):
+                sub = s.find("')")
+                if(s[sub-3:sub-2]) == "/":
+                    possible_moves.append(s[sub-2:sub-0])
+                else:
+                    possible_moves.append(s[sub-4:sub-2])
+                s = s[sub+1:]
+            return possible_moves
+            #return [node.name for node in PreOrderIter(root)]
         
     def chaining(self, y, x, board, root):
         fronta=[]
