@@ -56,10 +56,14 @@ def get_mouse_pos():
     return x, y
 
 def color_squares(y, x, color):
-    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board)[1:]:
-        i = int(pos[0])
-        j = int(pos[1])
-        board.squares[i][j].color = color
+    l = 0
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board):
+        if l == 0:
+            l = 1
+        else:
+            i = int(pos[0])
+            j = int(pos[1])
+            board.squares[i][j].color = color
 
 if __name__ == "__main__":
     main()

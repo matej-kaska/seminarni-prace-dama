@@ -51,7 +51,7 @@ class Man(Piece):
                     elif y - 2 >= 0 and x + 2 < COLS:
                         if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.team == "b":
                             Node(str(y-2) + str(x+2) + str(y-1) + str(x+1), parent=root)
-                            self.chaining(y-2, x+2, board, root)
+                            self.chaining(y-2, x+2, str(y-1) + str(x+1), board, root)
 
                 if y - 1 >= 0 and x - 1 >= 0:
                     if board.squares[y-1][x-1].piece is None:
@@ -59,7 +59,7 @@ class Man(Piece):
                     elif y - 2 >= 0 and x - 2 >= 0:
                         if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.team == "b":
                             Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=root)
-                            self.chaining(y-2, x-2, board, root)
+                            self.chaining(y-2, x-2, str(y-1) + str(x-1), board, root)
 
             if self.team == "b":
                 if y + 1 < ROWS and x + 1 < COLS:
@@ -68,6 +68,7 @@ class Man(Piece):
                     elif y + 2 < ROWS and x + 2 < COLS:
                         if board.squares[y+2][x+2].piece is None and board.squares[y+1][x+1].piece.team == "w":
                             Node(str(y+2) + str(x+2) + str(y+1) + str(x+1), parent=root)
+                            self.chaining(y+2, x+2, str(y+1) + str(x+1),board, root)
 
                 if y + 1 < ROWS and x - 1 >= 0:
                     if board.squares[y+1][x-1].piece is None:
@@ -75,37 +76,48 @@ class Man(Piece):
                     elif y + 2 < ROWS and x - 2 >= 0:
                         if board.squares[y+2][x-2].piece is None and board.squares[y+1][x-1].piece.team == "w":
                             Node(str(y+2) + str(x-2) + str(y+1) + str(x-1), parent=root)
+                            self.chaining(y+2, x-2, str(y+1) + str(x-1), board, root)
 
             print(RenderTree(root))
             possible_moves=[]
-            possible_moves.append(str(y) + str(x))
+            if root.is_leaf == False:
+                possible_moves.append(str(y) + str(x))
             s = str(root.leaves)
-            print(s)
             for i in range(s.count("')")):
                 sub = s.find("')")
                 if(s[sub-3:sub-2]) == "/":
-                    possible_moves.append(s[sub-2:sub-0])
+                    possible_moves.append(s[sub-2:sub])
                 else:
                     possible_moves.append(s[sub-4:sub-2])
                 s = s[sub+1:]
             return possible_moves
-            #return [node.name for node in PreOrderIter(root)]
         
-    def chaining(self, y, x, board, root):
+    def chaining(self, y, x, last_killed, board, root):
         fronta=[]
-        fronta.append(str(y) + str(x))
+        fronta.append(str(y) + str(x) + last_killed)
         while fronta:
             y = int(fronta[0][0])
             x = int(fronta[0][1])
             if self.team == "w":
                 if y - 2 >= 0 and x + 2 < COLS and board.squares[y-1][x+1].piece is not None:
                     if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.team == "b":
-                        Node(str(y-2) + str(x+2) + str(y+1) + str(x-1), parent=search.find_by_attr(root, str(y) + str(x) + str(y+1) + str(x-1)))
-                        fronta.append(str(y-2) + str(x+2))
+                        Node(str(y-2) + str(x+2) + str(y-1) + str(x+1), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                        fronta.append(str(y-2) + str(x+2) + str(y-1) + str(x+1))
 
                 if y - 2 >= 0 and x - 2 >= 0 and board.squares[y-1][x-1].piece is not None:
                     if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.team == "b":
-                        Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=search.find_by_attr(root, str(y) + str(x) + str(y+1) + str(x+1)))
-                        fronta.append(str(y-2) + str(x-2))
+                        Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                        fronta.append(str(y-2) + str(x-2) + str(y-1) + str(x-1))
+
+            if self.team == "b":
+                if y + 2 < ROWS and x + 2 < COLS and board.squares[y+1][x+1].piece is not None:
+                    if board.squares[y+2][x+2].piece is None and board.squares[y+1][x+1].piece.team == "w":
+                        Node(str(y+2) + str(x+2) + str(y+1) + str(x+1), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                        fronta.append(str(y+2) + str(x+2) + str(y+1) + str(x+1))
+
+                if y + 2 < ROWS and x - 2 >= 0 and board.squares[y+1][x-1].piece is not None:
+                    if board.squares[y+2][x-2].piece is None and board.squares[y+1][x-1].piece.team == "w":
+                        Node(str(y+2) + str(x-2) + str(y+1) + str(x-1), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                        fronta.append(str(y+2) + str(x-2) + str(y+1) + str(x-1))
 
             fronta.pop(0)
