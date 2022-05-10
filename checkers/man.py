@@ -32,21 +32,65 @@ class Man(Piece):
 
     def get_possible_moves(self, y, x, board):
         root = Node(str(y) + str(x))
-        #Logika (for) - pokud ano, tak ->
         if board.squares[y][x].piece is not None:
             if self.default_color == AQUA:
                 if y - 1 >= 0 and x + 1 < COLS:
                     if board.squares[y-1][x+1].piece is None:
                         Node(str(y-1) + str(x+1), parent=root)
+                    elif y - 2 >= 0 and x + 2 < COLS:
+                        if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.color == CRIMSON:
+                            Node(str(y-2) + str(x+2) + str(y-1) + str(x+1), parent=root)
+                            self.chaining(y-2, x+2, board)
+
                 if y - 1 >= 0 and x - 1 >= 0:
                     if board.squares[y-1][x-1].piece is None:
                         Node(str(y-1) + str(x-1), parent=root)
+                    elif y - 2 >= 0 and x - 2 >= 0:
+                        if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.color == CRIMSON:
+                            Node(str(y-2) + str(x-2) + str(y-1) + str(x-1), parent=root)
+                            self.chaining(y-2, x+2, board)
+
             if self.default_color == CRIMSON:
                 if y + 1 < ROWS and x + 1 < COLS:
                     if board.squares[y+1][x+1].piece is None:
                         Node(str(y+1) + str(x+1), parent=root)
+                    elif y + 2 < ROWS and x + 2 < COLS:
+                        if board.squares[y+2][x+2].piece is None and board.squares[y+1][x+1].piece.color == AQUA:
+                            Node(str(y+2) + str(x+2) + str(y+1) + str(x+1), parent=root)
+
                 if y + 1 < ROWS and x - 1 >= 0:
                     if board.squares[y+1][x-1].piece is None:
                         Node(str(y+1) + str(x-1), parent=root)
+                    elif y + 2 < ROWS and x - 2 >= 0:
+                        if board.squares[y+2][x-2].piece is None and board.squares[y+1][x-1].piece.color == AQUA:
+                            Node(str(y+2) + str(x-2) + str(y+1) + str(x-1), parent=root)
+
             print(RenderTree(root))
             return [node.name for node in PreOrderIter(root)]
+        
+    def chaining(self, y, x, board):
+        chains=[]
+        fronta=[]
+        fronta.append(str(y) + str(x))
+        while fronta:
+            y = int(fronta[0][0])
+            x = int(fronta[0][1])
+            if self.default_color == AQUA:
+                if y - 2 >= 0 and x + 2 < COLS:
+                    if board.squares[y-2][x+2].piece is None and board.squares[y-1][x+1].piece.color == CRIMSON:
+                        chains.append(str(y-2) + str(x+2))
+                        fronta.append(str(y-2) + str(x+2))
+                        if board.squares[y-2][x].piece is None:
+                            chains.append(str(y-2) + str(x))
+                            fronta.append(str(y-2) + str(x))   
+
+                if y - 2 >= 0 and x - 2 >= 0:
+                    if board.squares[y-2][x-2].piece is None and board.squares[y-1][x-1].piece.color == CRIMSON:
+                        chains.append(str(y-2) + str(x-2))
+                        fronta.append(str(y-2) + str(x-2))
+                        if board.squares[y-2][x].piece is None:
+                            chains.append(str(y-2) + str(x))
+                            fronta.append(str(y-2) + str(x)) 
+            fronta.pop(0)
+            
+        print("chains: " + str(chains))

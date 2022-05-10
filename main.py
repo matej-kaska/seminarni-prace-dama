@@ -27,11 +27,12 @@ def main():
                         prev_y = y
                         prev_x = x
                         x, y = get_mouse_pos()
-                        if board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW:
+                        if board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW:                
                             color_squares(prev_y, prev_x, BLACK)
                             board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
                             board.squares[prev_y][prev_x].piece = None
                             board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
+                            
                             selected_piece = False
                             break
                         else:

@@ -92,5 +92,10 @@ class Board:
             for j in range(COLS):
                 self._squares[i][j].draw_square(win)
 
-    def despawn_piece(self, y, x):
-        self._squares[y][x].piece = None
+    def despawn_piece(self, killed):
+        if killed:
+            for pos in killed:
+                y = int(pos[2])
+                x = int(pos[3])
+                self._squares[y][x].piece = None
+    
