@@ -10,6 +10,14 @@ class King(Piece):
     @color.setter
     def color(self, val):
         self._color = val
+    
+    @property
+    def team(self):
+        return self._team
+
+    @team.setter
+    def team(self, val):
+        self._team = val
 
     @property
     def default_color(self):

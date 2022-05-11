@@ -3,6 +3,9 @@ from .piece import Piece
 from .constants import AQUA, CRIMSON, ROWS, COLS
 from anytree import Node, PreOrderIter, RenderTree, search
 
+y = 0
+x = 0
+
 class Man(Piece):
     @property
     def color(self):
