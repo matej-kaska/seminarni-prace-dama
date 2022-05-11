@@ -41,7 +41,8 @@ class Man(Piece):
             square.size / 5 * 3)
             )
 
-    def get_possible_moves(self, y, x, board):
+    def get_possible_moves(self, y, x, board, despawning):
+        despawn_check = 0
         root = Node(str(y) + str(x))
         if board.squares[y][x].piece is not None:
             if self.team == "w":
@@ -89,7 +90,20 @@ class Man(Piece):
                     possible_moves.append(s[sub-2:sub])
                 else:
                     possible_moves.append(s[sub-4:sub-2])
+                    if despawn_check == 0 and despawning == s[sub-4:sub-2]:
+                        despawn_check = 1
+                        despawning = despawning + (s[sub-2:sub])
                 s = s[sub+1:]
+            if despawning is not None:
+                killed = []
+                s = str(search.find_by_attr(root, despawning))
+                for i in range(s.count("/")):
+                    sub = s.find("/")
+                    if "/" not in s[sub+1:sub+5]:
+                        if ")" not in s[sub+1:sub+5]:
+                            killed.append((s[sub+3:sub+5]))
+                    s = s[sub+1:] 
+                return killed
             return possible_moves
         
     def chaining(self, y, x, last_killed, board, root):

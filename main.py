@@ -29,10 +29,10 @@ def main():
                         x, y = get_mouse_pos()
                         if board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW:                
                             color_squares(prev_y, prev_x, BLACK)
+                            despawn(prev_y, prev_x, str(y) + str(x))
                             board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
                             board.squares[prev_y][prev_x].piece = None
                             board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
-                            
                             selected_piece = False
                             break
                         else:
@@ -57,13 +57,16 @@ def get_mouse_pos():
 
 def color_squares(y, x, color):
     l = 0
-    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board):
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None):
         if l == 0:
             l = 1
         else:
             i = int(pos[0])
             j = int(pos[1])
             board.squares[i][j].color = color
+
+def despawn(prev_y, prev_x, pos_despawning):
+    board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning))
 
 if __name__ == "__main__":
     main()

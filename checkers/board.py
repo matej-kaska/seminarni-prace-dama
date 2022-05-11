@@ -95,7 +95,7 @@ class Board:
     def despawn_piece(self, killed):
         if killed:
             for pos in killed:
-                y = int(pos[2])
-                x = int(pos[3])
+                y = int(pos[0])
+                x = int(pos[1])
                 self._squares[y][x].piece = None
     
