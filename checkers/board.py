@@ -98,4 +98,3 @@ class Board:
                 y = int(pos[0])
                 x = int(pos[1])
                 self._squares[y][x].piece = None
-    
