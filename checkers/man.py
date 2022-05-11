@@ -100,19 +100,20 @@ class Man(Piece):
                             Node(str(y+2) + str(x-2) + str(y+1) + str(x-1), parent=root2)
                             self.chaining(y+2, x-2, str(y+1) + str(x-1), board, root)
 
-                    if right_node and left_node == True:
+                if right_node and left_node == True:
+                    Node(str(y+1) + str(x+1), parent=root)
+                    Node(str(y+1) + str(x+1), parent=root2)
+                    Node(str(y+1) + str(x-1), parent=root)
+                    Node(str(y+1) + str(x-1), parent=root2)
+                
+                if root.is_leaf == True:
+                    if right_node == True:
+                        
                         Node(str(y+1) + str(x+1), parent=root)
                         Node(str(y+1) + str(x+1), parent=root2)
+                    elif left_node == True:
                         Node(str(y+1) + str(x-1), parent=root)
                         Node(str(y+1) + str(x-1), parent=root2)
-                    
-                    if root.is_leaf == True:
-                        if right_node == True:
-                            Node(str(y+1) + str(x+1), parent=root)
-                            Node(str(y+1) + str(x+1), parent=root2)
-                        elif left_node == True:
-                            Node(str(y+1) + str(x-1), parent=root)
-                            Node(str(y+1) + str(x-1), parent=root2)
 
             print(RenderTree(root))
             print(RenderTree(root2))
