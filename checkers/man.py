@@ -121,8 +121,8 @@ class Man(Piece):
                         Node(str(y+1) + str(x-1), parent=root)
                         Node(str(y+1) + str(x-1), parent=root2)
 
-            print(RenderTree(root))
-            print(RenderTree(root2))
+            #print(RenderTree(root))
+            #print(RenderTree(root2))
 
             # Possible moves
 

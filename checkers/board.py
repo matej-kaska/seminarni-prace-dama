@@ -98,3 +98,12 @@ class Board:
                 y = int(pos[0])
                 x = int(pos[1])
                 self._squares[y][x].piece = None
+
+    def spawn_king(self, y, x):
+        color = self._squares[y][x].piece.color
+        self._squares[y][x].piece = None
+        if color == CRIMSON:
+            team = "b"
+        else: 
+            team = "w"
+        self._squares[y][x].piece = King(color, team)

@@ -1,7 +1,8 @@
 import pygame
 import math
-from checkers.constants import SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW
+from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW
 from checkers.board import Board
+from checkers.man import Man
  
 FPS = 60
  
@@ -29,15 +30,21 @@ def main():
                         x, y = get_mouse_pos()
                         if board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW or board.squares[y][x].color == DARK_YELLOW:
                             if board.squares[y][x].color == DARK_YELLOW:
-                                move_piece(prev_y, prev_x, y, x)
+                                color_squares(prev_y, prev_x, BLACK)
+                                despawn(prev_y, prev_x, str(y) + str(x))
+                                board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
                                 color_squares(y, x, DARK_YELLOW)
                                 board.squares[y][x].piece.color = YELLOW
+                                board.squares[prev_y][prev_x].piece = None
                                 break
-                            elif board.squares[y][x].color == YELLOW:
-                                move_piece(prev_y, prev_x, y, x)
-                                board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
-                                selected_piece = False
-                                break
+                            color_squares(prev_y, prev_x, BLACK)
+                            despawn(prev_y, prev_x, str(y) + str(x))
+                            board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
+                            board.squares[prev_y][prev_x].piece = None
+                            board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
+                            selected_piece = False
+                            king_spawn_check(y, x)
+                            break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
  
@@ -46,7 +53,6 @@ def main():
                     board.squares[y][x].piece.color = YELLOW
                     selected_piece = True
                     color_squares(y, x, DARK_YELLOW)
-
         board.draw_board(WIN)
         pygame.display.update()
  
@@ -59,28 +65,31 @@ def get_mouse_pos():
     return x, y
  
 def color_squares(y, x, color):
+    l = 0
     for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
         i = int(pos[0])
         j = int(pos[1])
         if y != i and x != j:
             board.squares[i][j].color = color
-
-    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True)[1:]:
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True):
         color2 = YELLOW
         if color == BLACK:
             color2 = BLACK
-        i = int(pos[0])
-        j = int(pos[1])
-        board.squares[i][j].color = color2    
-
-def move_piece(prev_y, prev_x, y, x):
-    color_squares(prev_y, prev_x, BLACK)
-    despawn(prev_y, prev_x, str(y) + str(x))
-    board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
-    board.squares[prev_y][prev_x].piece = None
+        if l == 0:
+            l = 1
+        else:
+            i = int(pos[0])
+            j = int(pos[1])
+            board.squares[i][j].color = color2    
 
 def despawn(prev_y, prev_x, pos_despawning):
     board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, False))
+
+def king_spawn_check(y, x):
+    if y == 0 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == AQUA:
+        board.spawn_king(y, x)
+    if y == HEIGHT and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == CRIMSON:
+        board.spawn_king(y, x)
 
 if __name__ == "__main__":
     main()
