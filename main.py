@@ -1,6 +1,6 @@
 import pygame
 import math
-from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW
+from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS
 from checkers.board import Board
 from checkers.man import Man
  
@@ -66,22 +66,18 @@ def get_mouse_pos():
  
 def color_squares(y, x, color):
     if type(board.squares[y][x].piece) == Man:
-        l = 0
         for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
             i = int(pos[0])
             j = int(pos[1])
             if y != i and x != j:
                 board.squares[i][j].color = color
-        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True):
+        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True)[1:]:
             color2 = YELLOW
             if color == BLACK:
                 color2 = BLACK
-            if l == 0:
-                l = 1
-            else:
-                i = int(pos[0])
-                j = int(pos[1])
-                board.squares[i][j].color = color2
+            i = int(pos[0])
+            j = int(pos[1])
+            board.squares[i][j].color = color2
     else:
         for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
             i = int(pos[0])
@@ -95,7 +91,7 @@ def despawn(prev_y, prev_x, pos_despawning):
 def king_spawn_check(y, x):
     if y == 0 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == AQUA:
         board.spawn_king(y, x)
-    if y == HEIGHT and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == CRIMSON:
+    if y == ROWS - 1 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == CRIMSON:
         board.spawn_king(y, x)
 
 if __name__ == "__main__":
