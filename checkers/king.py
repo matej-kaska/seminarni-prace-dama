@@ -1,3 +1,4 @@
+from queue import Empty
 import pygame
 from .piece import Piece
 from .constants import COLS, ROWS, CORAL
@@ -47,7 +48,7 @@ class King(Piece):
             )
 
     def get_possible_moves(self, y, x, board, despawning, end_check):
-        despawn_check = 0
+        despawn_check = 1
         rightup_node = 0
         leftup_node = 0
         leftdown_node = 0
@@ -58,66 +59,110 @@ class King(Piece):
         if board.squares[y][x].piece is not None:
             next_y = y
             next_x = x
+            rightup_blocked = False
+            leftup_blocked = False
+            leftdown_blocked = False
+            rightdown_blocked = False
             check_rightup = True
             check_rightdown = False
             check_leftdown = False
             check_leftup = False
             move_cycling = True
+            killed = []
 
-            # Basic moves (without kill)
+            
+            if killed == []:
+            
+                # Basic moves (without kill)
 
-            while move_cycling == True:
-                if next_y - 1 >= 0 and next_x + 1 < COLS and check_rightup == True:
-                    if board.squares[next_y-1][next_x+1].piece is None:
-                        rightup_node = rightup_node + 1
+                while move_cycling == True:
+                    if next_y - 1 >= 0 and next_x + 1 < COLS and check_rightup == True:
+                        if board.squares[next_y-1][next_x+1].piece is None and rightup_blocked == False:
+                            rightup_node = rightup_node + 1
+                            Node(str(next_y-1) + str(next_x+1), parent=root)
+                        else:
+                            rightup_blocked = True
 
-                if next_y - 1 >= 0 and next_x - 1 >= 0 and check_leftup == True:
-                    if board.squares[next_y-1][next_x-1].piece is None:
-                        leftup_node = leftup_node + 1
+                    if next_y - 1 >= 0 and next_x - 1 >= 0 and check_leftup == True:
+                        if board.squares[next_y-1][next_x-1].piece is None and leftup_blocked == False:
+                            leftup_node = leftup_node + 1
+                            Node(str(next_y-1) + str(next_x-1), parent=root)
+                        else:
+                            leftup_blocked = True
 
-                if next_y + 1 < ROWS and next_x - 1 >= 0 and check_leftdown == True:
-                    if board.squares[next_y+1][next_x-1].piece is None:
-                        leftdown_node = leftdown_node + 1
+                    if next_y + 1 < ROWS and next_x - 1 >= 0 and check_leftdown == True and leftdown_blocked == False:
+                        if board.squares[next_y+1][next_x-1].piece is None:
+                            leftdown_node = leftdown_node + 1
+                            Node(str(next_y+1) + str(next_x-1), parent=root)
+                        else:
+                            leftdown_blocked = True
 
-                if next_y + 1 < ROWS and next_x + 1 < COLS and check_rightdown == True:
-                    if board.squares[next_y+1][next_x+1].piece is None:
-                        rightdown_node = rightdown_node + 1
-                
-                if next_y >= 0 and check_rightdown == True:
-                    next_y = next_y + 1
-                    next_x = next_x + 1
-                    if next_y == ROWS + 1:
-                        check_rightdown = False
-                        move_cycling = False
-                
-                if next_y <= ROWS and check_leftdown == True:
-                    next_y = next_y + 1
-                    next_x = next_x - 1
-                    if next_y == ROWS + 1:
-                        next_y = y
-                        next_x = x
-                        check_leftdown = False
-                        check_rightdown = True
-                
-                if next_y <= ROWS and check_leftup == True:
-                    next_y = next_y - 1
-                    next_x = next_x - 1
-                    if next_y == -1:
-                        next_y = y
-                        next_x = x
-                        check_leftup = False
-                        check_leftdown = True
+                    if next_y + 1 < ROWS and next_x + 1 < COLS and check_rightdown == True and rightdown_blocked == False:
+                        if board.squares[next_y+1][next_x+1].piece is None:
+                            rightdown_node = rightdown_node + 1
+                            Node(str(next_y+1) + str(next_x+1), parent=root)
+                        else:
+                            rightdown_blocked = True
+                    
+                    if next_y >= 0 and check_rightdown == True:
+                        next_y = next_y + 1
+                        next_x = next_x + 1
+                        if next_y == ROWS + 1:
+                            check_rightdown = False
+                            move_cycling = False
+                    
+                    if next_y <= ROWS and check_leftdown == True:
+                        next_y = next_y + 1
+                        next_x = next_x - 1
+                        if next_y == ROWS + 1:
+                            next_y = y
+                            next_x = x
+                            check_leftdown = False
+                            check_rightdown = True
+                    
+                    if next_y <= ROWS and check_leftup == True:
+                        next_y = next_y - 1
+                        next_x = next_x - 1
+                        if next_y == -1:
+                            next_y = y
+                            next_x = x
+                            check_leftup = False
+                            check_leftdown = True
 
-                if next_y >= 0 and check_rightup == True:
-                    next_y = next_y - 1
-                    next_x = next_x + 1
-                    if next_y == -1:
-                        next_y = y
-                        next_x = x
-                        check_rightup = False
-                        check_leftup = True
+                    if next_y >= 0 and check_rightup == True:
+                        next_y = next_y - 1
+                        next_x = next_x + 1
+                        if next_y == -1:
+                            next_y = y
+                            next_x = x
+                            check_rightup = False
+                            check_leftup = True
+            
+            # Possible moves
 
+            possible_end_moves = []
+            despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning)
             print("leftup: " + str(leftup_node))
             print("leftdown: " + str(leftdown_node))
             print("rightup: " + str(rightup_node))
             print("rightdown: " + str(rightdown_node))
+            return possible_end_moves
+
+            
+
+    def __moves_substring(self, tree_root, arr, despawn_check, despawning):
+        s = str(tree_root.leaves)
+        for _ in range(s.count("')")):
+            sub = s.find("')")
+            if (s[sub-3:sub-2]) == "/":
+                arr.append(s[sub-2:sub])
+            else:
+                arr.append(s[sub-4:sub-2])
+                if despawn_check == 0 and despawning == s[sub-4:sub-2]:
+                    despawn_check = 1
+                    despawning = despawning + (s[sub-2:sub])
+            s = s[sub+1:]
+        return despawning
+            
+
+            

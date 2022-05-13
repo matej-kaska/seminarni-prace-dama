@@ -79,11 +79,13 @@ def color_squares(y, x, color):
             j = int(pos[1])
             board.squares[i][j].color = color2
     else:
-        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
+        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True):
+            color2 = YELLOW
+            if color == BLACK:
+                color2 = BLACK
             i = int(pos[0])
             j = int(pos[1])
-            if y != i and x != j:
-                board.squares[i][j].color = color
+            board.squares[i][j].color = color2
 
 def despawn(prev_y, prev_x, pos_despawning):
     board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, False))
