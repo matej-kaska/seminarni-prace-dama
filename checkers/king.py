@@ -48,20 +48,20 @@ class King(Piece):
             )
 
     def get_possible_moves(self, y, x, board, despawning, end_check):
+        despawn_check = 0 #smazat
         rightup_node = 0
         leftup_node = 0
         leftdown_node = 0
         rightdown_node = 0
         root = Node(str(y) + str(x))
         root2 = Node(str(y) + str(x))
-        killed = []
 
         if board.squares[y][x].piece is not None:
-            rightup_node, leftup_node, leftdown_node, rightdown_node = self.__move_check(board, y, x, rightup_node, leftup_node, leftdown_node, rightdown_node)
+            root, rightup_node, leftup_node, leftdown_node, rightdown_node = self.__move_check(board, y, x, root, rightup_node, leftup_node, leftdown_node, rightdown_node)
             next_y = y
             next_x = x
             
-            if killed == []:
+            if root.is_leaf == True:
                 for i in range(1, rightup_node + 1):
                     Node(str(next_y-i) + str(next_x+i), parent=root)
                 for i in range(1, leftup_node + 1):
@@ -73,19 +73,44 @@ class King(Piece):
             
             # Possible moves
 
+            possible_moves = []
+            despawning = self.__moves_substring(root2, possible_moves, despawn_check, despawning)
+
             possible_end_moves = []
-            self.__moves_substring(root, possible_end_moves)
-            return possible_end_moves
+            despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning)
+            print(str(despawning))
+
+            if despawning is not None:
+                killed = []
+                s = str(search.find_by_attr(root, despawning))
+                for _ in range(s.count("/")):
+                    sub = s.find("/")
+                    if "/" not in s[sub+1:sub+5]:
+                        if ")" not in s[sub+1:sub+5]:
+                            killed.append((s[sub+3:sub+5]))
+                    s = s[sub+1:] 
+                return killed
+            if end_check == True:
+                return possible_end_moves
+            else:
+                return possible_moves
 
 
-    def __moves_substring(self, tree_root, arr):
+    def __moves_substring(self, tree_root, arr, despawn_check, despawning):
         s = str(tree_root.leaves)
         for _ in range(s.count("')")):
             sub = s.find("')")
-            arr.append(s[sub-2:sub])
+            if (s[sub-3:sub-2]) == "/":
+                arr.append(s[sub-2:sub])
+            else:
+                arr.append(s[sub-4:sub-2])
+                if despawn_check == 0 and despawning == s[sub-4:sub-2]:
+                    despawn_check = 1
+                    despawning = despawning + (s[sub-2:sub])
             s = s[sub+1:]
+        return despawning
 
-    def __move_check(self, board, y, x, rightup_node, leftup_node, leftdown_node, rightdown_node):
+    def __move_check(self, board, y, x, root, rightup_node, leftup_node, leftdown_node, rightdown_node):
         next_y = y
         next_x = x
         rightup_blocked = False
@@ -108,38 +133,66 @@ class King(Piece):
                     rightup_blocked = True
                     if next_y - 2 >= 0 and next_x + 2 < COLS:
                         if board.squares[next_y-2][next_x+2].piece is None and self.team != board.squares[next_y-1][next_x+1].piece.team:
-                            print("kill")
-                            #Kill (přidat pozici killu pro všechny pozice)
+                            kill_y = next_y - 1
+                            kill_x = next_x + 1
+
                             #for všechny ostatní pozice přidat do end move
+                            for i in range(7):       #možná vylepšit ten range?
+                                if next_y - 2 - i >= 0 and next_x + 2 + i < COLS:
+                                    if board.squares[next_y-2-i][next_x+2+i].piece is None:
+                                        Node(str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x), parent=root)
+
                             #for všechny ostatní pozice přidat pozici do fronty a pokud se zde nachází kill udělat smyčku
+
 
 
             if next_y - 1 >= 0 and next_x - 1 >= 0 and check_leftup == True:
                 if board.squares[next_y-1][next_x-1].piece is None and leftup_blocked == False:
                     leftup_node = leftup_node + 1
-                else:
+                elif leftup_blocked == False:
                     leftup_blocked = True
                     if next_y - 2 >= 0 and next_x - 2 >= 0:
-                        if board.squares[next_y-2][next_x-2].piece is not None:
-                            leftup_double_blocked = True
+                        if board.squares[next_y-2][next_x-2].piece is None and self.team != board.squares[next_y-1][next_x-1].piece.team:
+                            kill_y = next_y - 1
+                            kill_x = next_x - 1
+
+                            #for všechny ostatní pozice přidat do end move
+                            for i in range(7):       #možná vylepšit ten range?
+                                if next_y - 2 - i >= 0 and next_x - 2 - i >= 0:
+                                    if board.squares[next_y-2-i][next_x-2-i].piece is None:
+                                        Node(str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x), parent=root)
 
             if next_y + 1 < ROWS and next_x - 1 >= 0 and check_leftdown == True and leftdown_blocked == False:
                 if board.squares[next_y+1][next_x-1].piece is None:
                     leftdown_node = leftdown_node + 1
-                else:
+                elif leftdown_blocked == False:
                     leftdown_blocked = True
                     if next_y + 2 < ROWS and next_x - 2 >= 0:
-                        if board.squares[next_y+2][next_x-2].piece is not None:
-                            leftdown_double_blocked = True
+                        if board.squares[next_y+2][next_x-2].piece is None and self.team != board.squares[next_y+1][next_x-1].piece.team:
+                            kill_y = next_y + 1
+                            kill_x = next_x - 1
+
+                            #for všechny ostatní pozice přidat do end move
+                            for i in range(7):       #možná vylepšit ten range?
+                                if next_y + 2 + i >= ROWS and next_x - 2 - i >= 0:
+                                    if board.squares[next_y+2+i][next_x-2-i].piece is None:
+                                        Node(str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x), parent=root)
 
             if next_y + 1 < ROWS and next_x + 1 < COLS and check_rightdown == True and rightdown_blocked == False:
                 if board.squares[next_y+1][next_x+1].piece is None:
                     rightdown_node = rightdown_node + 1
-                else:
+                elif rightdown_blocked == False:
                     rightdown_blocked = True
                     if next_y + 2 < ROWS and next_x + 2 < COLS:
-                        if board.squares[next_y+2][next_x+2].piece is not None:
-                            rightdown_double_blocked = True
+                        if board.squares[next_y+2][next_x+2].piece is None and self.team != board.squares[next_y+1][next_x+1].piece.team:
+                            kill_y = next_y + 1
+                            kill_x = next_x + 1
+
+                            #for všechny ostatní pozice přidat do end move
+                            for i in range(7):       #možná vylepšit ten range?
+                                if next_y + 2 + i < ROWS and next_x + 2 + i < COLS:
+                                    if board.squares[next_y+2+i][next_x+2+i].piece is None:
+                                        Node(str(next_y+2+i) + str(next_x+2+i) + str(kill_y) + str(kill_x), parent=root)
             
             if next_y >= 0 and check_rightdown == True:
                 next_y = next_y + 1
@@ -175,4 +228,4 @@ class King(Piece):
                     check_rightup = False
                     check_leftup = True
 
-        return rightup_node, leftup_node, leftdown_node, rightdown_node
+        return root, rightup_node, leftup_node, leftdown_node, rightdown_node

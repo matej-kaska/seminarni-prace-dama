@@ -79,6 +79,11 @@ def color_squares(y, x, color):
             j = int(pos[1])
             board.squares[i][j].color = color2
     else:
+        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
+            i = int(pos[0])
+            j = int(pos[1])
+            if y != i and x != j:
+                board.squares[i][j].color = color
         for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True):
             color2 = YELLOW
             if color == BLACK:
