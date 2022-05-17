@@ -31,14 +31,14 @@ def main():
                         if board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW or board.squares[y][x].color == DARK_YELLOW:
                             if board.squares[y][x].color == DARK_YELLOW:
                                 color_squares(prev_y, prev_x, BLACK)
-                                despawn(prev_y, prev_x, str(y) + str(x))
+                                despawn(prev_y, prev_x, str(y) + str(x), False)
                                 board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
                                 color_squares(y, x, DARK_YELLOW)
                                 board.squares[y][x].piece.color = YELLOW
                                 board.squares[prev_y][prev_x].piece = None
                                 break
                             color_squares(prev_y, prev_x, BLACK)
-                            despawn(prev_y, prev_x, str(y) + str(x))
+                            despawn(prev_y, prev_x, str(y) + str(x), True)
                             board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
                             board.squares[prev_y][prev_x].piece = None
                             board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
@@ -92,8 +92,8 @@ def color_squares(y, x, color):
             j = int(pos[1])
             board.squares[i][j].color = color2
 
-def despawn(prev_y, prev_x, pos_despawning):
-    board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, False))
+def despawn(prev_y, prev_x, pos_despawning, end):
+    board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, end))
 
 def king_spawn_check(y, x):
     if y == 0 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == AQUA:

@@ -1,4 +1,3 @@
-from queue import Empty
 import pygame
 from .piece import Piece
 from .constants import COLS, ROWS, CORAL
@@ -55,21 +54,82 @@ class King(Piece):
         rightdown_node = 0
         root = Node(str(y) + str(x))
         root2 = Node(str(y) + str(x))
+        kills = []
 
         if board.squares[y][x].piece is not None:
-            root, rightup_node, leftup_node, leftdown_node, rightdown_node = self.__move_check(board, y, x, root, rightup_node, leftup_node, leftdown_node, rightdown_node)
+            root, rightup_node, leftup_node, leftdown_node, rightdown_node, kills = self.__move_check(board, y, x, root, root2, rightup_node, leftup_node, leftdown_node, rightdown_node, kills)
             next_y = y
             next_x = x
+            print(str(kills))
             
+            # Possible moves při braní, ale bez chainingu
+
+            if len(kills) > 0 and root.is_leaf == True:
+                for kill in kills:
+                    ky = int(kill[0])
+                    kx = int(kill[1])
+                    diff_y = 0
+                    diff_x = 0
+                    diff_y = y - ky
+                    diff_x = x - kx
+                    enemy_spoted = False
+
+                    if diff_y > 0 and diff_x > 0: #leftup
+                        for i in range(1,7):
+                            if y - i >= 0 and x - i >= 0:
+                                if enemy_spoted == True:
+                                    if board.squares[y-i][x-i].piece is None:
+                                        Node(str(y-i) + str(x-i) + str(ky) + str(kx), parent=root)
+                                    else:
+                                        break
+                                if board.squares[y-i][x-i].piece is not None:
+                                    enemy_spoted = True
+                    if diff_y < 0 and diff_x > 0: #leftdown
+                        for i in range(1,7):
+                            if y + i < ROWS and x - i >= 0:
+                                if enemy_spoted == True:
+                                    if board.squares[y+i][x-i].piece is None:
+                                        Node(str(y+i) + str(x-i) + str(ky) + str(kx), parent=root)
+                                    else:
+                                        break
+                                if board.squares[y+i][x-i].piece is not None:
+                                    enemy_spoted = True
+                    if diff_y > 0 and diff_x < 0: #rightup
+                        for i in range(1,7):
+                            if y - i >= 0 and x + i < COLS:
+                                if enemy_spoted == True:
+                                    if board.squares[y-i][x+i].piece is None:
+                                        Node(str(y-i) + str(x+i) + str(ky) + str(kx), parent=root)
+                                    else:
+                                        break
+                                if board.squares[y-i][x+i].piece is not None:
+                                    enemy_spoted = True
+                    if diff_y < 0 and diff_x < 0: #rightdown
+                        for i in range(1,7):
+                            if y + i < ROWS and x + i < COLS:
+                                if enemy_spoted == True:
+                                    if board.squares[y+i][x+i].piece is None:
+                                        Node(str(y+i) + str(x+i) + str(ky) + str(kx), parent=root)
+                                    else:
+                                        break
+                                if board.squares[y+i][x+i].piece is not None:
+                                    enemy_spoted = True
+
+            # Possible moves bez braní
+
             if root.is_leaf == True:
                 for i in range(1, rightup_node + 1):
                     Node(str(next_y-i) + str(next_x+i), parent=root)
+                    Node(str(next_y-i) + str(next_x+i), parent=root2)
                 for i in range(1, leftup_node + 1):
                     Node(str(next_y-i) + str(next_x-i), parent=root)
+                    Node(str(next_y-i) + str(next_x-i), parent=root2)
                 for i in range(1, leftdown_node + 1):
                     Node(str(next_y+i) + str(next_x-i), parent=root)
+                    Node(str(next_y+i) + str(next_x-i), parent=root2)
                 for i in range(1, rightdown_node + 1):
                     Node(str(next_y+i) + str(next_x+i), parent=root)
+                    Node(str(next_y+i) + str(next_x+i), parent=root2)
             
             # Possible moves
 
@@ -78,11 +138,20 @@ class King(Piece):
 
             possible_end_moves = []
             despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning)
-            print(str(despawning))
+            
+
+            #print("MOVES: " + str(possible_moves))
+            print("END: " + str(possible_end_moves))
+            print(RenderTree(root))
+            
+            #print(RenderTree(root2))
 
             if despawning is not None:
                 killed = []
-                s = str(search.find_by_attr(root, despawning))
+                if end_check == True:
+                    s = str(search.find_by_attr(root, despawning))
+                else:
+                    s = str(search.find_by_attr(root2, despawning))
                 for _ in range(s.count("/")):
                     sub = s.find("/")
                     if "/" not in s[sub+1:sub+5]:
@@ -110,7 +179,7 @@ class King(Piece):
             s = s[sub+1:]
         return despawning
 
-    def __move_check(self, board, y, x, root, rightup_node, leftup_node, leftdown_node, rightdown_node):
+    def __move_check(self, board, y, x, root, root2, rightup_node, leftup_node, leftdown_node, rightdown_node, kills):
         next_y = y
         next_x = x
         rightup_blocked = False
@@ -122,6 +191,7 @@ class King(Piece):
         check_leftdown = False
         check_leftup = False
         move_cycling = True
+        
         
         # Move - all directions 
         
@@ -135,15 +205,35 @@ class King(Piece):
                         if board.squares[next_y-2][next_x+2].piece is None and self.team != board.squares[next_y-1][next_x+1].piece.team:
                             kill_y = next_y - 1
                             kill_x = next_x + 1
+                            chain_y = next_y-2
+                            chain_x = next_x+2
 
                             #for všechny ostatní pozice přidat do end move
                             for i in range(7):       #možná vylepšit ten range?
                                 if next_y - 2 - i >= 0 and next_x + 2 + i < COLS:
                                     if board.squares[next_y-2-i][next_x+2+i].piece is None:
-                                        Node(str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x), parent=root)
-
-                            #for všechny ostatní pozice přidat pozici do fronty a pokud se zde nachází kill udělat smyčku
-
+                                        if str(kill_y) + str(kill_x) not in kills:
+                                            kills.append(str(kill_y) + str(kill_x))                    
+                                            for j in range(6):
+                                                if next_y - 2 - i - j >= 0 and next_x + 2 + i + j < COLS or next_y - 2 - i - j == -1 or next_x + 2 + i + j == COLS:
+                                                    if next_y - 2 - i - j == -1 or next_x + 2 + i + j == COLS: 
+                                                        chain_y = next_y-2-i-j+1
+                                                        chain_x = next_x+2+i+j-1
+                                                        Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd11")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                                                    elif board.squares[next_y-2-i-j][next_x+2+i+j].piece is None:
+                                                        chain_y = next_y-2-i-j
+                                                        chain_x = next_x+2+i+j
+                                                        
+                                                        print("nodeadd1")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                                        
+                                        
+                            
+                            self.__chaining(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), board, root, kills)
 
 
             if next_y - 1 >= 0 and next_x - 1 >= 0 and check_leftup == True:
@@ -155,12 +245,34 @@ class King(Piece):
                         if board.squares[next_y-2][next_x-2].piece is None and self.team != board.squares[next_y-1][next_x-1].piece.team:
                             kill_y = next_y - 1
                             kill_x = next_x - 1
+                            chain_y = next_y-2
+                            chain_x = next_x-2
 
                             #for všechny ostatní pozice přidat do end move
                             for i in range(7):       #možná vylepšit ten range?
                                 if next_y - 2 - i >= 0 and next_x - 2 - i >= 0:
                                     if board.squares[next_y-2-i][next_x-2-i].piece is None:
-                                        Node(str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x), parent=root)
+                                        if str(kill_y) + str(kill_x) not in kills:
+                                            kills.append(str(kill_y) + str(kill_x))
+                                            for j in range(6):
+                                                if next_y - 2 - i - j >= 0 and next_x - 2 - i - j >= 0 or next_y - 2 - i - j == -1 or next_x - 2 - i - j == -1:
+                                                    print("y: " + str(next_y - 2 - i - j) + " x: " + str(next_x - 2 - i - j))
+                                                    if next_y - 2 - i - j == -1 or next_x - 2 - i - j == -1:
+                                                        chain_y = next_y-2-i-j-1
+                                                        chain_x = next_x-2-i-j-1
+                                                        Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd22")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                                                    elif board.squares[next_y-2-i-j][next_x-2-i-j].piece is None:
+                                                        chain_y = next_y-2-j-i
+                                                        chain_x = next_x-2-j-i
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd2")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                            
+                            self.__chaining(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), board, root, kills)
 
             if next_y + 1 < ROWS and next_x - 1 >= 0 and check_leftdown == True and leftdown_blocked == False:
                 if board.squares[next_y+1][next_x-1].piece is None:
@@ -171,28 +283,71 @@ class King(Piece):
                         if board.squares[next_y+2][next_x-2].piece is None and self.team != board.squares[next_y+1][next_x-1].piece.team:
                             kill_y = next_y + 1
                             kill_x = next_x - 1
+                            chain_y = next_y+2
+                            chain_x = next_x-2
 
                             #for všechny ostatní pozice přidat do end move
                             for i in range(7):       #možná vylepšit ten range?
-                                if next_y + 2 + i >= ROWS and next_x - 2 - i >= 0:
+                                if next_y + 2 + i < ROWS and next_x - 2 - i >= 0:
                                     if board.squares[next_y+2+i][next_x-2-i].piece is None:
-                                        Node(str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x), parent=root)
+                                        if str(kill_y) + str(kill_x) not in kills:
+                                            kills.append(str(kill_y) + str(kill_x))
+                                            for j in range(6):
+                                                if next_y + 2 + i + j < ROWS and next_x - 2 - i - j >= 0 or next_y + 2 + i + j == ROWS or next_x - 2 - i - j == -1:
+                                                    if next_y + 2 + i + j == ROWS or next_x - 2 - i - j == -1:
+                                                        chain_y = next_y+2+i+j+1
+                                                        chain_x = next_x-2-i-j-1
+                                                        Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd33")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                                                    elif board.squares[next_y+2+i+j][next_x-2-i-j].piece is None:
+                                                        chain_y = next_y+2+j+i
+                                                        chain_x = next_x-2-j-i
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd3")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                            
+                            self.__chaining(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), board, root, kills)
 
             if next_y + 1 < ROWS and next_x + 1 < COLS and check_rightdown == True and rightdown_blocked == False:
                 if board.squares[next_y+1][next_x+1].piece is None:
                     rightdown_node = rightdown_node + 1
                 elif rightdown_blocked == False:
                     rightdown_blocked = True
+                    
                     if next_y + 2 < ROWS and next_x + 2 < COLS:
                         if board.squares[next_y+2][next_x+2].piece is None and self.team != board.squares[next_y+1][next_x+1].piece.team:
                             kill_y = next_y + 1
                             kill_x = next_x + 1
+                            chain_y = next_y+2
+                            chain_x = next_x+2
 
                             #for všechny ostatní pozice přidat do end move
                             for i in range(7):       #možná vylepšit ten range?
                                 if next_y + 2 + i < ROWS and next_x + 2 + i < COLS:
                                     if board.squares[next_y+2+i][next_x+2+i].piece is None:
-                                        Node(str(next_y+2+i) + str(next_x+2+i) + str(kill_y) + str(kill_x), parent=root)
+                                        if str(kill_y) + str(kill_x) not in kills:
+                                            kills.append(str(kill_y) + str(kill_x))
+                                            for j in range(6):
+                                                if next_y + 2 + i + j < ROWS and next_x + 2 + i + j < COLS or next_y + 2 + i + j == ROWS or next_x + 2 + i + j == COLS:
+                                                    if next_y + 2 + i + j == ROWS or next_x + 2 + i + j == COLS:
+                                                        chain_y = next_y+2+i+j+1
+                                                        chain_x = next_x+2+i+j+1
+                                                        Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd44")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                                                    elif board.squares[next_y+2+i+j][next_x+2+i+j].piece is None:
+                                                        chain_y = next_y+2+i+j
+                                                        chain_x = next_x+2+i+j
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root)
+                                                        print("nodeadd4")
+                                                        #Node(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), parent=root2)
+                                                        break
+                            
+                            self.__chaining(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), board, root, kills)
             
             if next_y >= 0 and check_rightdown == True:
                 next_y = next_y + 1
@@ -227,5 +382,173 @@ class King(Piece):
                     next_x = x
                     check_rightup = False
                     check_leftup = True
+                    
+        return root, rightup_node, leftup_node, leftdown_node, rightdown_node, kills
 
-        return root, rightup_node, leftup_node, leftdown_node, rightdown_node
+    def __chaining(self, pos, board, root, kills):
+        fronta = []
+        fronta_checked = []
+        fronta.append(pos)
+        while fronta:
+            y = int(fronta[0][0])
+            x = int(fronta[0][1])
+            next_y = int(fronta[0][0])
+            next_x = int(fronta[0][1])
+            check_rightup = True
+            check_rightdown = False
+            check_leftdown = False
+            check_leftup = False
+            move_cycling = True
+
+            while move_cycling == True:
+                if next_y - 1 >= 0 and next_x + 1 < COLS and check_rightup == True:
+                    if next_y - 2 >= 0 and next_x + 2 < COLS:
+                        if board.squares[next_y-1][next_x+1].piece is not None:
+                            if board.squares[next_y-2][next_x+2].piece is None and self.team != board.squares[next_y-1][next_x+1].piece.team:
+                                kill_y = next_y - 1
+                                kill_x = next_x + 1
+                                if str(kill_y) + str(kill_x) not in kills:
+                                    if root.is_leaf == True:
+                                        Node(str(next_y) + str(next_x) + str(pos[2]) + str(pos[3]), parent=root)
+                                        Node(str(next_y-2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])))
+                                        fronta.append(str(next_y) + str(next_x) + str(kill_y) + str(kill_x))
+                                        print("nodeadd111")
+                                    else:
+                                        Node(str(next_y-2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                                        Node(str(next_y+2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + pos[2:4]))
+                                    kills.append(str(kill_y) + str(kill_x))
+
+                                    for i in range(7):       #možná vylepšit ten range?
+                                        if next_y - 2 - i >= 0 and next_x + 2 + i < COLS:
+                                            if board.squares[next_y-2-i][next_x+2+i].piece is None:
+                                                if next_y - 3 - i >= 0 and next_x + 3 + i < COLS:
+                                                    if board.squares[next_y-3-i][next_x+3+i].piece is not None:
+                                                        if board.squares[next_y-3-i][next_x+3+i].piece.team == self.team:
+                                                            break
+                                                if str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x) not in fronta_checked:
+                                                    fronta.append(str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x))
+   
+                                            
+
+                if next_y - 1 >= 0 and next_x - 1 >= 0 and check_leftup == True:
+                    if next_y - 2 >= 0 and next_x - 2 >= 0:
+                        if board.squares[next_y-1][next_x-1].piece is not None:
+                            if board.squares[next_y-2][next_x-2].piece is None and self.team != board.squares[next_y-1][next_x-1].piece.team:
+                                kill_y = next_y - 1
+                                kill_x = next_x - 1
+                                if str(kill_y) + str(kill_x) not in kills:
+                                    if root.is_leaf == True:
+                                        Node(str(next_y) + str(next_x) + str(pos[2]) + str(pos[3]), parent=root)
+                                        Node(str(next_y-2) + str(next_x-2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])))
+                                        fronta.append(str(next_y) + str(next_x) + str(kill_y) + str(kill_x))
+                                        print("nodeadd222")
+                                    else:
+                                        Node(str(next_y-2) + str(next_x-2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                                        Node(str(next_y+2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + pos[2:4]))
+                                    kills.append(str(kill_y) + str(kill_x))
+
+                                    for i in range(7):       #možná vylepšit ten range?
+                                        if next_y - 2 - i >= 0 and next_x - 2 - i >= 0:
+                                            if board.squares[next_y-2-i][next_x-2-i].piece is None:
+                                                if next_y - 3 - i >= 0 and next_x - 3 - i >= 0:
+                                                    if board.squares[next_y-3-i][next_x-3-i].piece is not None:
+                                                        if board.squares[next_y-3-i][next_x-3-i].piece.team == self.team:
+                                                            break
+                                                if str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x) not in fronta_checked:
+                                                    fronta.append(str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x))
+
+
+                if next_y + 1 < ROWS and next_x - 1 >= 0 and check_leftdown == True:
+                    if next_y + 2 < ROWS and next_x - 2 >= 0:
+                        if board.squares[next_y+1][next_x-1].piece is not None:
+                            if board.squares[next_y+2][next_x-2].piece is None and self.team != board.squares[next_y+1][next_x-1].piece.team:
+                                kill_y = next_y + 1
+                                kill_x = next_x - 1
+                                if str(kill_y) + str(kill_x) not in kills:
+                                    if root.is_leaf == True:
+                                        Node(str(next_y) + str(next_x) + str(pos[2]) + str(pos[3]), parent=root)
+                                        Node(str(next_y+2) + str(next_x-2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])))
+                                        fronta.append(str(next_y) + str(next_x) + str(kill_y) + str(kill_x))
+                                        print("nodeadd333")
+                                    else:
+                                        Node(str(next_y+2) + str(next_x-2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                                        Node(str(next_y+2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + pos[2:4]))
+                                    kills.append(str(kill_y) + str(kill_x))
+
+                                    for i in range(7):       #možná vylepšit ten range?
+                                        if next_y + 2 + i < ROWS and next_x - 2 - i >= 0:
+                                            if board.squares[next_y+2+i][next_x-2-i].piece is None:
+                                                if next_y + 3 + i < ROWS and next_x - 3 - i >= 0:
+                                                    if board.squares[next_y+3+i][next_x-3-i].piece is not None:
+                                                        if board.squares[next_y+3+i][next_x-3-i].piece.team == self.team:
+                                                            break
+                                                if str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x) not in fronta_checked:
+                                                    fronta.append(str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x))
+
+
+                if next_y + 1 < ROWS and next_x + 1 < COLS and check_rightdown == True:
+                    if next_y + 2 < ROWS and next_x + 2 < COLS:
+                        if board.squares[next_y+1][next_x+1].piece is not None:
+                            if board.squares[next_y+2][next_x+2].piece is None and self.team != board.squares[next_y+1][next_x+1].piece.team:
+                                kill_y = next_y + 1
+                                kill_x = next_x + 1
+                                if str(kill_y) + str(kill_x) not in kills:
+                                    if root.is_leaf == True:
+                                        Node(str(next_y) + str(next_x) + str(pos[2]) + str(pos[3]), parent=root)
+                                        Node(str(next_y+2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])))
+                                        fronta.append(str(next_y) + str(next_x) + str(kill_y) + str(kill_x))
+                                        print("nodeadd444")
+                                    else:
+                                        print(str(y) + str(x) + pos[0][2:4])
+                                        Node(str(next_y+2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + fronta[0][2:4]))
+                                        Node(str(next_y+2) + str(next_x+2) + str(kill_y) + str(kill_x), parent=search.find_by_attr(root, str(y) + str(x) + pos[2:4]))
+                                        print("nodeadd4444")
+                                    kills.append(str(kill_y) + str(kill_x))
+
+                                    for i in range(7):       #možná vylepšit ten range?
+                                        if next_y + 2 + i < ROWS and next_x + 2 + i < COLS:
+                                            if board.squares[next_y+2+i][next_x+2+i].piece is None:
+                                                if next_y + 3 + i < ROWS and next_x + 3 + i < COLS:
+                                                    if board.squares[next_y+3+i][next_x+3+i].piece is not None:
+                                                        if board.squares[next_y+3+i][next_x+3+i].piece.team == self.team:
+                                                            break
+                                                if str(next_y+2+i) + str(next_x+2+i) + str(kill_y) + str(kill_x) not in fronta_checked:
+                                                    fronta.append(str(next_y+2+i) + str(next_x+2+i) + str(kill_y) + str(kill_x))
+
+
+                if next_y >= 0 and check_rightdown == True:
+                    next_y = next_y + 1
+                    next_x = next_x + 1
+                    if next_y == ROWS + 1:
+                        check_rightdown = False
+                        move_cycling = False
+                
+                if next_y <= ROWS and check_leftdown == True:
+                    next_y = next_y + 1
+                    next_x = next_x - 1
+                    if next_y == ROWS + 1:
+                        next_y = y
+                        next_x = x
+                        check_leftdown = False
+                        check_rightdown = True
+                
+                if next_y <= ROWS and check_leftup == True:
+                    next_y = next_y - 1
+                    next_x = next_x - 1
+                    if next_y == -1:
+                        next_y = y
+                        next_x = x
+                        check_leftup = False
+                        check_leftdown = True
+
+                if next_y >= 0 and check_rightup == True:
+                    next_y = next_y - 1
+                    next_x = next_x + 1
+                    if next_y == -1:
+                        next_y = y
+                        next_x = x
+                        check_rightup = False
+                        check_leftup = True
+            print("fronta: " + str(fronta))
+            fronta_checked.append(fronta[0])
+            fronta.pop(0)
