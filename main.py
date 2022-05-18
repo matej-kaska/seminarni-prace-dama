@@ -65,33 +65,19 @@ def get_mouse_pos():
     return x, y
  
 def color_squares(y, x, color):
-    if type(board.squares[y][x].piece) == Man:
-        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
-            i = int(pos[0])
-            j = int(pos[1])
-            if y != i and x != j:
-                board.squares[i][j].color = color
-        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True)[1:]:
-            color2 = YELLOW
-            if color == BLACK:
-                color2 = BLACK
-            i = int(pos[0])
-            j = int(pos[1])
-            board.squares[i][j].color = color2
-    else:
-        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
-            i = int(pos[0])
-            j = int(pos[1])
-            if y != i and x != j:
-                board.squares[i][j].color = color
-        for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True):
-            color2 = YELLOW
-            if color == BLACK:
-                color2 = BLACK
-            i = int(pos[0])
-            j = int(pos[1])
-            board.squares[i][j].color = color2
-
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
+        i = int(pos[0])
+        j = int(pos[1])
+        if y != i and x != j:
+            board.squares[i][j].color = color
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True)[1:]:
+        color2 = YELLOW
+        if color == BLACK:
+            color2 = BLACK
+        i = int(pos[0])
+        j = int(pos[1])
+        board.squares[i][j].color = color2
+        
 def despawn(prev_y, prev_x, pos_despawning, end):
     board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, end))
 
