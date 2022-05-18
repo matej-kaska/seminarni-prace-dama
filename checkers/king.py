@@ -195,7 +195,10 @@ class King(Piece):
                 if end_check == True:
                     s = str(search.find_by_attr(root, despawning))
                 else:
-                    s = str(search.find_by_attr(root2, despawning))
+                    try:
+                        s = str(search.find_by_attr(root2, despawning))
+                    except:
+                        s = str(search.findall_by_attr(root2, despawning))
                 for _ in range(s.count("/")):
                     sub = s.find("/")
                     if "/" not in s[sub+1:sub+5]:
