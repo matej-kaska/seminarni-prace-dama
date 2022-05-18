@@ -60,8 +60,51 @@ class King(Piece):
             root, rightup_node, leftup_node, leftdown_node, rightdown_node, kills = self.__move_check(board, y, x, root, root2, rightup_node, leftup_node, leftdown_node, rightdown_node, kills)
             next_y = y
             next_x = x
-            print(str(kills))
             
+            # Prodloužení políček pokud je to možné (po chainingu)
+
+            if root.is_leaf == False:
+                possible_end_moves_more = []
+                end_pos = self.__moves_substring(root, possible_end_moves_more, despawn_check, possible_end_moves_more, True)
+                for pos in end_pos:
+                    y = int(pos[5])
+                    x = int(pos[6])
+                    ky = int(pos[7])
+                    kx = int(pos[8])
+                    diff_y = 0
+                    diff_x = 0
+                    diff_y = ky - y
+                    diff_x = kx - x
+
+                    if diff_y > 0 and diff_x > 0: #leftup
+                        for i in range(1,8):
+                            if y - i >= 0 and x - i >= 0:
+                                if board.squares[y-i][x-i].piece is None:
+                                    Node(str(y-i) + str(x-i) + str(ky) + str(kx), parent=search.find_by_attr(root, pos[0:4]))
+                                else:
+                                    break
+                    if diff_y < 0 and diff_x > 0: #leftdown
+                        for i in range(1,8):
+                            if y + i < ROWS and x - i >= 0: 
+                                if board.squares[y+i][x-i].piece is None:
+                                    Node(str(y+i) + str(x-i) + str(ky) + str(kx), parent=search.find_by_attr(root, pos[0:4]))
+                                else:
+                                    break
+                    if diff_y > 0 and diff_x < 0: #rightup
+                        for i in range(1,8):
+                            if y - i >= 0 and x + i < COLS:
+                                if board.squares[y-i][x+i].piece is None:
+                                    Node(str(y-i) + str(x+i) + str(ky) + str(kx), parent=search.find_by_attr(root, pos[0:4]))
+                                else:
+                                    break
+                    if diff_y < 0 and diff_x < 0: #rightdown
+                        for i in range(1,8):
+                            if y + i < ROWS and x + i < COLS:
+                                if board.squares[y+i][x+i].piece is None:
+                                    Node(str(y+i) + str(x+i) + str(ky) + str(kx), parent=search.find_by_attr(root, pos[0:4]))
+                                else:
+                                    break
+
             # Possible moves při braní, ale bez chainingu
 
             if len(kills) > 0 and root.is_leaf == True:
@@ -134,18 +177,17 @@ class King(Piece):
             # Possible moves
 
             possible_moves = []
-            despawning = self.__moves_substring(root2, possible_moves, despawn_check, despawning)
+            despawning = self.__moves_substring(root2, possible_moves, despawn_check, despawning, False)
             
             possible_end_moves = []
             if root.is_leaf == False:
                 possible_end_moves.append(str(y) + str(x))
-            despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning)
+            despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning, False)
             print(str(despawning))
 
             #print("MOVES: " + str(possible_moves))
             print("END: " + str(possible_end_moves))
             print(RenderTree(root))
-            
             #print(RenderTree(root2))
 
             if despawning is not None:
@@ -167,14 +209,17 @@ class King(Piece):
                 return possible_moves
 
 
-    def __moves_substring(self, tree_root, arr, despawn_check, despawning):
+    def __moves_substring(self, tree_root, arr, despawn_check, despawning, extension):
         s = str(tree_root.leaves)
         for _ in range(s.count("')")):
             sub = s.find("')")
             if (s[sub-3:sub-2]) == "/":
                 arr.append(s[sub-2:sub])
             else:
-                arr.append(s[sub-4:sub-2])
+                if extension == True:
+                    despawning.append(s[sub-9:sub])
+                else:
+                    arr.append(s[sub-4:sub-2])
                 if despawn_check == 0 and despawning == s[sub-4:sub-2]:
                     despawn_check = 1
                     despawning = despawning + (s[sub-2:sub])
@@ -676,13 +721,9 @@ class King(Piece):
     def kill_check(self, root, pos, kill, f):
         killed = []
         killed.append(kill[0])
-        print("check: " + pos)
-        print("f: " + f)
-        print(RenderTree(root))
         s = str(search.find_by_attr(root, pos))
         if s == "None":
             s = str(search.find_by_attr(root, f))
-        print(s)
         for _ in range(s.count("/")):
             sub = s.find("/")
             if "/" not in s[sub+1:sub+5]:
