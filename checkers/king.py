@@ -193,7 +193,10 @@ class King(Piece):
             if despawning is not None:
                 killed = []
                 if end_check == True:
-                    s = str(search.find_by_attr(root, despawning))
+                    try:
+                        s = str(search.find_by_attr(root, despawning))
+                    except:
+                        s = str(search.findall_by_attr(root, despawning))
                 else:
                     try:
                         s = str(search.find_by_attr(root2, despawning))
@@ -434,10 +437,13 @@ class King(Piece):
         buffer_lu = []
         buffer_rd = []
         buffer_ld = []
+        check_ru = False
+        check_lu = False
+        check_rd = False
+        check_ld = False
         fronta = self.add_fronta(int(pos[0]), int(pos[1]), killsc[0], board, str(org_y) + str(org_x))
         fronta.insert(0, pos + str(org_y) + str(org_x))
         print(fronta)
-        check = False
         kill_y = killsc[0][0]
         kill_x = killsc[0][1]
         kills = []
@@ -468,10 +474,10 @@ class King(Piece):
                                 print("KILLED: " + str(killed))
 
                                 if str(kill_y) + str(kill_x) not in killed:
-                                    if root.is_leaf == True and check == False:
+                                    if root.is_leaf == True and check_ru == False:
                                         buffer = str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])
                                         fronta.insert(0, pos + pos)
-                                        check = True
+                                        check_ru = True
                                         print("nodeadd111")
                                     else:
                                         print("nodeadd1111")
@@ -514,10 +520,10 @@ class King(Piece):
                                 print(str(kill_y) + str(kill_x))
 
                                 if str(kill_y) + str(kill_x) not in killed:
-                                    if root.is_leaf == True and check == False:
+                                    if root.is_leaf == True and check_lu == False:
                                         buffer = str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])
                                         fronta.insert(0, pos + pos)
-                                        check = True
+                                        check_lu = True
                                         print("nodeadd222")
                                     else:
                                         if len(fronta[0]) == 6:
@@ -557,10 +563,10 @@ class King(Piece):
                                 print("KILLED: " + str(killed))
 
                                 if str(kill_y) + str(kill_x) not in killed:
-                                    if root.is_leaf == True and check == False:
+                                    if root.is_leaf == True and check_ld == False:
                                         buffer = str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])
                                         fronta.insert(0, pos + pos)
-                                        check = True
+                                        check_ld = True
                                         print("nodeadd333")
                                     else:
                                         if len(fronta[0]) == 6:
@@ -601,10 +607,10 @@ class King(Piece):
                                 print("KILLED: " + str(killed))
 
                                 if str(kill_y) + str(kill_x) not in killed:
-                                    if root.is_leaf == True and check == False:
+                                    if root.is_leaf == True and check_rd == False:
                                         buffer = str(next_y) + str(next_x) + str(pos[2]) + str(pos[3])
                                         fronta.insert(0, pos + pos)
-                                        check = True
+                                        check_rd = True
                                         print("nodeadd444")
                                     else:
                                         if len(fronta[0]) == 6:
