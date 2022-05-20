@@ -462,7 +462,7 @@ class King(Piece):
                         if board.squares[next_y-1][next_x+1].piece is not None:
                             if board.squares[next_y-2][next_x+2].piece is None and self.team != board.squares[next_y-1][next_x+1].piece.team:
                                 prev_kill_y = kill_y
-                                prev_kill_x = kill_x
+                                prev_kill_x = kill_x #přehodit možná nad while?
                                 yx = fronta[0][0:2]
                                 kill_y = next_y - 1
                                 kill_x = next_x + 1
