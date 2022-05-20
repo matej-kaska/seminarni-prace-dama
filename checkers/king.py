@@ -436,9 +436,10 @@ class King(Piece):
         check_lu = False
         check_rd = False
         check_ld = False
+        print("START: " + str(fronta))
         fronta = self.add_fronta(int(pos[0]), int(pos[1]), killsc[0], board, str(org_y) + str(org_x))
         fronta.insert(0, pos + str(org_y) + str(org_x))
-        print(fronta)
+        print("START: " + str(fronta))
         kill_y = killsc[0][0]
         kill_x = killsc[0][1]
         kills = []
@@ -477,7 +478,7 @@ class King(Piece):
                                         print("nodeadd1111")
                                         if len(fronta[0]) == 6:
                                             if len(buffer) > 2:
-                                                if buffer not in str(search.find_by_attr(root, buffer)):
+                                                if buffer not in str(search.find_by_attr(root, buffer)) and buffer[0:2] not in str(search.find_by_attr(root, buffer[0:2])):
                                                     Node(buffer, parent=root)
                                                 Node(str(fronta[0][0:4]), parent=root2)
                                         if len(fronta[0]) != 6:
@@ -496,6 +497,7 @@ class King(Piece):
                                                             if board.squares[next_y-3-i][next_x+3+i].piece.team == self.team:
                                                                 break
                                                     if str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x) not in fronta_checked:
+                                                        print("appended: " + str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x))
                                                         fronta.append(str(next_y-2-i) + str(next_x+2+i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x))
                                         buffer_ru.append(str(next_y-2) + str(next_x+2))
                                             
@@ -540,6 +542,7 @@ class King(Piece):
                                                                 break
                                                     if str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x) not in fronta_checked:
                                                         fronta.append(str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x))
+                                                        print("appended: " + str(next_y-2-i) + str(next_x-2-i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x))
                                         buffer_lu.append(str(next_y-2) + str(next_x-2))
 
                 if next_y + 1 < ROWS and next_x - 1 >= 0 and check_leftdown == True:
@@ -583,6 +586,7 @@ class King(Piece):
                                                                 break
                                                     if str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x) not in fronta_checked:
                                                         fronta.append(str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x))
+                                                        print("appended: " + str(next_y+2+i) + str(next_x-2-i) + str(kill_y) + str(kill_x) + str(yx) + str(prev_kill_y) + str(prev_kill_x))
                                         buffer_ld.append(str(next_y+2) + str(next_x-2))
 
                 if next_y + 1 < ROWS and next_x + 1 < COLS and check_rightdown == True:
@@ -714,7 +718,7 @@ class King(Piece):
             for i in range(1,8):
                 if y + i < ROWS and x + i < COLS:
                     if board.squares[y+i][x+i].piece is None:
-                        fronta.append(str(y-i) + str(x-i) + str(ky) + str(kx) + last)
+                        fronta.append(str(y+i) + str(x+i) + str(ky) + str(kx) + last)
                     else:
                         break
         return fronta
