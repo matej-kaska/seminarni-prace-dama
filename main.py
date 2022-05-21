@@ -1,6 +1,6 @@
 import pygame
 import math
-from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS
+from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS, COLS, WHITE
 from checkers.board import Board
 from checkers.man import Man
  
@@ -14,21 +14,23 @@ def main():
     selected_piece = False
     run = True
     clock = pygame.time.Clock()
- 
+    pygame.font.init()
+
     while run:
         clock.tick(FPS)
+ 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
  
                 if selected_piece == True:
-                    if board.squares[y][x].piece is not None:
+                    if x < COLS and board.squares[y][x].piece is not None:
                         board.squares[y][x].piece.color = board.squares[y][x].piece.default_color     
                         prev_y = y
                         prev_x = x
                         x, y = get_mouse_pos()
-                        if board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW or board.squares[y][x].color == DARK_YELLOW:
+                        if x < COLS and board.squares[y][x].piece is None and board.squares[y][x].color == YELLOW or x < COLS and board.squares[y][x].color == DARK_YELLOW:
                             if board.squares[y][x].color == DARK_YELLOW:
                                 color_squares(prev_y, prev_x, BLACK)
                                 despawn(prev_y, prev_x, str(y) + str(x), False)
@@ -49,11 +51,12 @@ def main():
                             color_squares(prev_y, prev_x, BLACK)
  
                 x, y = get_mouse_pos()
-                if board.squares[y][x].piece is not None:
+                if x < COLS and board.squares[y][x].piece is not None:
                     board.squares[y][x].piece.color = YELLOW
                     selected_piece = True
                     color_squares(y, x, DARK_YELLOW)
         board.draw_board(WIN)
+        draw_menu()
         pygame.display.update()
  
     pygame.quit()
@@ -86,6 +89,39 @@ def king_spawn_check(y, x):
         board.spawn_king(y, x)
     if y == ROWS - 1 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == CRIMSON:
         board.spawn_king(y, x)
+
+def text_objects(text, font):
+    text_surface = font.render(text, True, BLACK)
+    return text_surface, text_surface.get_rect()
+
+def button(msg, x, y, width, height, inactive_color, active_color):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+
+    if x + width > mouse[0] > x and y + height > mouse[1] > y:
+        pygame.draw.rect(WIN, active_color, (x, y, width, height))
+
+        if click[0] == 1:
+            if msg == "LOAD":
+                board.add_pieces_from_csv()
+                return
+            elif msg == "SAVE":
+                board.save_game()
+                return
+            elif msg == "DEBUG":
+                ...
+    else:
+        pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
+
+    font = pygame.font.SysFont("inkfree", 16)
+    text_surf, text_rect = text_objects(msg, font)
+    text_rect.center = ((x + width/2), (y + height/2))
+    WIN.blit(text_surf, text_rect)
+
+def draw_menu():
+    button("LOAD", 850, 50, 100, 50, WHITE, YELLOW)
+    button("SAVE", 850, 150, 100, 50, WHITE, YELLOW)
+    button("DEBUG", 850, 250, 100, 50, WHITE, YELLOW)
 
 if __name__ == "__main__":
     main()
