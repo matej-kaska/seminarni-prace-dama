@@ -1,6 +1,7 @@
 import pygame
 from .piece import Piece
 from .constants import ROWS, COLS
+from .render import import_render
 from anytree import Node, RenderTree, search
 
 class Man(Piece):
@@ -147,6 +148,7 @@ class Man(Piece):
                     s = s[sub+1:] 
                 return killed
             if end_check == True:
+                import_render(str(RenderTree(root)))
                 return possible_end_moves
             else:
                 return possible_moves

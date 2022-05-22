@@ -1,24 +1,36 @@
 import pygame
 import math
+from tkinter import *
 from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS, COLS, WHITE
 from checkers.board import Board
 from checkers.man import Man
+from checkers.render import export_render
  
 FPS = 60
  
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Checkers")
 board = Board()
+render = ""
+debug = False
  
 def main():
     selected_piece = False
+    debug_open = False
     run = True
     clock = pygame.time.Clock()
     pygame.font.init()
-
     while run:
         clock.tick(FPS)
- 
+        if debug == True:
+            if debug_open == False:
+                debug_open = True
+                win_debug = Tk()
+                win_debug.title("Dáma - debug")
+                win_debug.geometry("400x400")
+                label_render = Label(win_debug, text=export_render(), font=('Helvetica 14 bold'), justify=LEFT)
+                win_debug.update()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -38,6 +50,8 @@ def main():
                                 color_squares(y, x, DARK_YELLOW)
                                 board.squares[y][x].piece.color = YELLOW
                                 board.squares[prev_y][prev_x].piece = None
+                                if debug == True:
+                                    debug_render(win_debug, label_render)
                                 break
                             color_squares(prev_y, prev_x, BLACK)
                             despawn(prev_y, prev_x, str(y) + str(x), True)
@@ -49,12 +63,14 @@ def main():
                             break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
- 
+                        
                 x, y = get_mouse_pos()
                 if x < COLS and board.squares[y][x].piece is not None:
                     board.squares[y][x].piece.color = YELLOW
                     selected_piece = True
                     color_squares(y, x, DARK_YELLOW)
+                    if debug == True:
+                        debug_render(win_debug, label_render)
         board.draw_board(WIN)
         draw_menu()
         pygame.display.update()
@@ -109,7 +125,9 @@ def button(msg, x, y, width, height, inactive_color, active_color):
                 board.save_game()
                 return
             elif msg == "DEBUG":
-                ...
+                global debug
+                debug = True
+                return
     else:
         pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
 
@@ -122,6 +140,11 @@ def draw_menu():
     button("LOAD", 850, 50, 100, 50, WHITE, YELLOW)
     button("SAVE", 850, 150, 100, 50, WHITE, YELLOW)
     button("DEBUG", 850, 250, 100, 50, WHITE, YELLOW)
+
+def debug_render(win_debug, label_render):
+    label_render.config(text=export_render())
+    label_render.pack()
+    win_debug.update()
 
 if __name__ == "__main__":
     main()
