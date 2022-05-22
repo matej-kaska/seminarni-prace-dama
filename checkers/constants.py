@@ -1,7 +1,7 @@
 # Resolution, board size
-WIDTH, HEIGHT = 800, 800
+WIDTH, HEIGHT = 1000, 800
 ROWS, COLS = 8, 8
-SQUARE_SIZE = WIDTH // COLS
+SQUARE_SIZE = HEIGHT // COLS
  
 # Colors (RGB)
 WHITE = (255, 255, 255)
