@@ -28,6 +28,7 @@ def main():
                 win_debug = Tk()
                 win_debug.title("Dáma - debug")
                 win_debug.geometry("400x400")
+                win_debug.overrideredirect(True)
                 label_render = Label(win_debug, text=export_render(), font=('Helvetica 14 bold'), justify=LEFT)
                 win_debug.update()
 
