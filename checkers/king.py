@@ -48,7 +48,7 @@ class King(Piece):
             )
 
     def get_possible_moves(self, y, x, board, despawning, end_check):
-        despawn_check = 0 #smazat
+        despawn_check = 0
         rightup_node = 0
         leftup_node = 0
         leftdown_node = 0
@@ -185,10 +185,6 @@ class King(Piece):
                 possible_end_moves.append(str(y) + str(x))
             despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning, False)
 
-            #print("MOVES: " + str(possible_moves))
-            #print("END: " + str(possible_end_moves))
-            #print(RenderTree(root))
-            #print(RenderTree(root2))
 
             if despawning is not None:
                 killed = []
@@ -262,8 +258,7 @@ class King(Piece):
                             chain_y = next_y-2
                             chain_x = next_x+2
 
-                            #for všechny ostatní pozice přidat do end move
-                            for i in range(7):       #možná vylepšit ten range?
+                            for i in range(7):
                                 if next_y - 2 - i >= 0 and next_x + 2 + i < COLS:
                                     if board.squares[next_y-2-i][next_x+2+i].piece is None:
                                         if str(kill_y) + str(kill_x) not in kills:
@@ -296,8 +291,7 @@ class King(Piece):
                             chain_y = next_y-2
                             chain_x = next_x-2
 
-                            #for všechny ostatní pozice přidat do end move
-                            for i in range(7):       #možná vylepšit ten range?
+                            for i in range(7):
                                 if next_y - 2 - i >= 0 and next_x - 2 - i >= 0:
                                     if board.squares[next_y-2-i][next_x-2-i].piece is None:
                                         if str(kill_y) + str(kill_x) not in kills:
@@ -328,8 +322,7 @@ class King(Piece):
                             chain_y = next_y+2
                             chain_x = next_x-2
 
-                            #for všechny ostatní pozice přidat do end move
-                            for i in range(6):       #možná vylepšit ten range?
+                            for i in range(7):
                                 if next_y + 2 + i < ROWS and next_x - 2 - i >= 0:
                                     if board.squares[next_y+2+i][next_x-2-i].piece is None:
                                         if str(kill_y) + str(kill_x) not in kills:
@@ -360,8 +353,7 @@ class King(Piece):
                             chain_y = next_y+2
                             chain_x = next_x+2
 
-                            #for všechny ostatní pozice přidat do end move
-                            for i in range(7):       #možná vylepšit ten range?
+                            for i in range(7):
                                 if next_y + 2 + i < ROWS and next_x + 2 + i < COLS:
                                     if board.squares[next_y+2+i][next_x+2+i].piece is None:
                                         if str(kill_y) + str(kill_x) not in kills:
@@ -477,7 +469,7 @@ class King(Piece):
                                         kills.append(str(kill_y) + str(kill_x))
                                     
                                     if str(next_y-2) + str(next_x+2) not in buffer_ru:
-                                        for i in range(7):       #možná vylepšit ten range?
+                                        for i in range(7):
                                             if next_y - 2 - i >= 0 and next_x + 2 + i < COLS:
                                                 if board.squares[next_y-2-i][next_x+2+i].piece is None:
                                                     if next_y - 3 - i >= 0 and next_x + 3 + i < COLS:
@@ -517,7 +509,7 @@ class King(Piece):
                                         kills.append(str(kill_y) + str(kill_x))
 
                                     if str(next_y-2) + str(next_x-2) not in buffer_lu:
-                                        for i in range(7):       #možná vylepšit ten range?
+                                        for i in range(7):
                                             if next_y - 2 - i >= 0 and next_x - 2 - i >= 0:
                                                 if board.squares[next_y-2-i][next_x-2-i].piece is None:
                                                     if next_y - 3 - i >= 0 and next_x - 3 - i >= 0:
@@ -556,7 +548,7 @@ class King(Piece):
                                         kills.append(str(kill_y) + str(kill_x))
 
                                     if str(next_y+2) + str(next_x-2) not in buffer_ld:
-                                        for i in range(7):       #možná vylepšit ten range?
+                                        for i in range(7):
                                             if next_y + 2 + i < ROWS and next_x - 2 - i >= 0:
                                                 if board.squares[next_y+2+i][next_x-2-i].piece is None:
                                                     if next_y + 3 + i < ROWS and next_x - 3 - i >= 0:
@@ -595,7 +587,7 @@ class King(Piece):
                                         kills.append(str(kill_y) + str(kill_x))
                                     
                                     if str(next_y+2) + str(next_x+2) not in buffer_rd:
-                                        for i in range(7):       #možná vylepšit ten range?
+                                        for i in range(7):
                                             if next_y + 2 + i < ROWS and next_x + 2 + i < COLS:
                                                 if board.squares[next_y+2+i][next_x+2+i].piece is None:
                                                     if next_y + 3 + i < ROWS and next_x + 3 + i < COLS:
@@ -649,6 +641,8 @@ class King(Piece):
                     last_buffer.pop(0)
             fronta_checked.append(fronta[0])
             fronta.pop(0)
+
+    # Přidání pozic do fronty při chainingu
     
     def add_fronta(self, y, x, kills, board, last):
         fronta = []
@@ -688,6 +682,8 @@ class King(Piece):
                     else:
                         break
         return fronta
+
+    # Kontrola killů v chainu
 
     def kill_check(self, root, pos, kill, f):
         killed = []
