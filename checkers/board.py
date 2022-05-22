@@ -137,7 +137,6 @@ class Board:
                 self._squares[i][j].draw_square(win)
 
     def despawn_piece(self, killed):
-        print(str(killed))
         if killed:
             for pos in killed:
                 y = int(pos[0])
