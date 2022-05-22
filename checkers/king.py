@@ -185,7 +185,6 @@ class King(Piece):
                 possible_end_moves.append(str(y) + str(x))
             despawning = self.__moves_substring(root, possible_end_moves, despawn_check, despawning, False)
 
-
             if despawning is not None:
                 killed = []
                 if end_check == True:
@@ -210,7 +209,6 @@ class King(Piece):
                 return possible_end_moves
             else:
                 return possible_moves
-
 
     def __moves_substring(self, tree_root, arr, despawn_check, despawning, extension):
         s = str(tree_root.leaves)
@@ -242,7 +240,6 @@ class King(Piece):
         check_leftup = False
         move_cycling = True
         
-        
         # Move - all directions 
         
         while move_cycling == True:
@@ -273,11 +270,8 @@ class King(Piece):
                                                         chain_y = next_y-2-i-j
                                                         chain_x = next_x+2+i+j
                                                         break
-                                        
-                                        
                             
                             self.__chaining(str(chain_y) + str(chain_x) + str(kill_y) + str(kill_x), board, root, root2, kills, next_y, next_x)
-
 
             if next_y - 1 >= 0 and next_x - 1 >= 0 and check_leftup == True:
                 if board.squares[next_y-1][next_x-1].piece is None and leftup_blocked == False:
