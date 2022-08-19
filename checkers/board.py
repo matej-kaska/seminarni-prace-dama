@@ -151,3 +151,18 @@ class Board:
         else: 
             team = "w"
         self._squares[y][x].piece = King(color, team)
+    
+    def restart_board(self):
+        for i in range(ROWS):
+            for j in range(COLS):
+                self._squares[i][j].piece = None
+                if i % 2 == 0:
+                    if i < 3 and j % 2 == 1:
+                        self._squares[i][j].piece = Man(CRIMSON, "b")
+                    elif i > 4 and j % 2 == 1:
+                        self._squares[i][j].piece = Man(AQUA, "w")
+                elif i % 2 == 1:
+                    if i < 3 and j % 2 == 0:
+                        self._squares[i][j].piece = Man(CRIMSON, "b")
+                    elif i > 4 and j % 2 == 0:
+                        self._squares[i][j].piece = Man(AQUA, "w")

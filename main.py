@@ -17,6 +17,7 @@ debug = False
 def main():
     selected_piece = False
     turn = "w"
+    analyze = ""
     debug_open = False
     run = True
     clock = pygame.time.Clock()
@@ -24,7 +25,7 @@ def main():
     font = pygame.font.SysFont("inkfree", 26)
     font.bold = True
     turn_label_black = font.render('XXXXXXXXXXXX', True, BLACK, BLACK)
-    turn_label = font.render('Blue Turns', True, AQUA, BLACK)
+    turn_label = font.render("Blue's Turn", True, AQUA, BLACK)
     turn_rect = turn_label.get_rect()
     turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
     WIN.blit(turn_label, turn_rect)
@@ -72,6 +73,7 @@ def main():
                                 turn = "b"
                             else:
                                 turn = "w"
+                            analyze = board_analyze()
                             break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
@@ -87,12 +89,30 @@ def main():
         draw_menu()
         if turn == "w":
             WIN.blit(turn_label_black, turn_rect)
-            turn_label = font.render('Blue Turns', True, AQUA, BLACK)
+            turn_label = font.render("Blue's Turn", True, AQUA, BLACK)
+            turn_rect = turn_label.get_rect()
+            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
             WIN.blit(turn_label, turn_rect)
         else:
             WIN.blit(turn_label_black, turn_rect)
-            turn_label = font.render('Red Turns', True, CRIMSON, BLACK)
+            turn_label = font.render("Red's Turn", True, CRIMSON, BLACK)
+            turn_rect = turn_label.get_rect()
+            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
             WIN.blit(turn_label, turn_rect)
+        
+        if analyze == "white_win" or analyze == "black_win":
+            if analyze == "white_win":
+                WIN.blit(turn_label_black, turn_rect)
+                turn_label = font.render("Blue won", True, AQUA, BLACK)
+                turn_rect = turn_label.get_rect()
+                turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
+                WIN.blit(turn_label, turn_rect)
+            if analyze == "black_win":
+                WIN.blit(turn_label_black, turn_rect)
+                turn_label = font.render("Red won", True, CRIMSON, BLACK)
+                turn_rect = turn_label.get_rect()
+                turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
+                WIN.blit(turn_label, turn_rect)
         pygame.display.update()
  
     pygame.quit()
@@ -140,6 +160,7 @@ def button(msg, x, y, width, height, inactive_color, active_color):
         if click[0] == 1:
             if msg == "LOAD":
                 board.add_pieces_from_csv()
+                main()
                 return
             elif msg == "SAVE":
                 board.save_game()
@@ -147,6 +168,10 @@ def button(msg, x, y, width, height, inactive_color, active_color):
             elif msg == "DEBUG":
                 global debug
                 debug = True
+                return
+            elif msg == "RESTART":
+                board.restart_board()
+                main()
                 return
     else:
         pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
@@ -160,11 +185,47 @@ def draw_menu():
     button("LOAD", 850, 50, 100, 50, WHITE, YELLOW)
     button("SAVE", 850, 150, 100, 50, WHITE, YELLOW)
     button("DEBUG", 850, 250, 100, 50, WHITE, YELLOW)
+    button("RESTART", 850, 450, 100, 50, WHITE, YELLOW)
 
 def debug_render(win_debug, label_render):
     label_render.config(text=export_render())
     label_render.pack()
     win_debug.update()
+
+def board_analyze():
+    white_count = 0
+    black_count = 0
+    white_men = 0
+    white_kings = 0
+    black_men = 0
+    black_kings = 0
+    for i in range(ROWS):
+        for j in range(COLS):
+            if board.squares[i][j].piece is not None:
+                if board.squares[i][j].piece.team == "w":
+                    white_count = white_count + 1
+                    if type(board.squares[i][j].piece) == Man:
+                        white_men = white_men + 1
+                    else:
+                        white_kings = white_kings + 1
+                else:
+                    black_count = black_count + 1
+                    if type(board.squares[i][j].piece) == Man:
+                        black_men = black_men + 1
+                    else:
+                        black_kings = black_kings + 1
+
+    print("Black count: "  + str(black_count))
+    print("White count: "  + str(white_count))
+    print("White men: "  + str(white_men))
+    print("White kings: "  + str(white_kings))
+    print("Black men: "  + str(black_men))
+    print("Black kings: "  + str(black_kings))
+
+    if white_count == 0:
+        return "black_win"
+    if black_count == 0:
+        return "white_win"
 
 if __name__ == "__main__":
     main()
