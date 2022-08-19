@@ -16,10 +16,18 @@ debug = False
  
 def main():
     selected_piece = False
+    turn = "w"
     debug_open = False
     run = True
     clock = pygame.time.Clock()
     pygame.font.init()
+    font = pygame.font.SysFont("inkfree", 26)
+    font.bold = True
+    turn_label_black = font.render('XXXXXXXXXXXX', True, BLACK, BLACK)
+    turn_label = font.render('Blue Turns', True, AQUA, BLACK)
+    turn_rect = turn_label.get_rect()
+    turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
+    WIN.blit(turn_label, turn_rect)
     while run:
         clock.tick(FPS)
         if debug == True:
@@ -36,7 +44,6 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
- 
                 if selected_piece == True:
                     if x < COLS and board.squares[y][x].piece is not None:
                         board.squares[y][x].piece.color = board.squares[y][x].piece.default_color     
@@ -61,12 +68,16 @@ def main():
                             board.squares[y][x].piece.color = board.squares[y][x].piece.default_color
                             selected_piece = False
                             king_spawn_check(y, x)
+                            if board.squares[y][x].piece.team == "w":
+                                turn = "b"
+                            else:
+                                turn = "w"
                             break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
                         
                 x, y = get_mouse_pos()
-                if x < COLS and board.squares[y][x].piece is not None:
+                if x < COLS and board.squares[y][x].piece is not None and board.squares[y][x].piece.team == turn:
                     board.squares[y][x].piece.color = YELLOW
                     selected_piece = True
                     color_squares(y, x, DARK_YELLOW)
@@ -74,6 +85,14 @@ def main():
                         debug_render(win_debug, label_render)
         board.draw_board(WIN)
         draw_menu()
+        if turn == "w":
+            WIN.blit(turn_label_black, turn_rect)
+            turn_label = font.render('Blue Turns', True, AQUA, BLACK)
+            WIN.blit(turn_label, turn_rect)
+        else:
+            WIN.blit(turn_label_black, turn_rect)
+            turn_label = font.render('Red Turns', True, CRIMSON, BLACK)
+            WIN.blit(turn_label, turn_rect)
         pygame.display.update()
  
     pygame.quit()
