@@ -4,6 +4,7 @@ from tkinter import *
 from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS, COLS, WHITE
 from checkers.board import Board
 from checkers.man import Man
+from checkers.king import King
 from checkers.render import export_render
  
 FPS = 60
@@ -81,6 +82,7 @@ def main():
                 x, y = get_mouse_pos()
                 if x < COLS and board.squares[y][x].piece is not None and board.squares[y][x].piece.team == turn:
                     possible_moves = board_analyze("possible_moves", turn)
+                    print(str(possible_moves))
                     if str(y) + str(x) in possible_moves:
                         board.squares[y][x].piece.color = YELLOW
                         selected_piece = True
@@ -239,13 +241,24 @@ def board_analyze(analyzer, turn):
                     if board.squares[i][j].piece.team == turn:
                         raw_possible_moves.append(board.squares[i][j].piece.get_possible_moves(i, j, board, None, end_check = True, analyze = True))
         for pos in raw_possible_moves:
+            print(str(pos))
             if len(pos) > 1:
                 possible_moves.append(pos[0])
                 if len(pos) >= 2:
                     for pos2 in pos:
                         if len(pos2) > 2:
                             possible_kills.append(pos[0])
+        print(str(possible_moves))
+        print(str(possible_kills))
         if len(possible_kills) >= 1:
+            kingkill = False
+            for pos in possible_kills:
+                print("POS: " + pos)
+                if type(board.squares[int(pos[0])][int(pos[1])].piece) == King:
+                    if kingkill == False:
+                        possible_kills = []
+                        kingkill = True
+                    possible_kills.append(str(pos[0]) + str(pos[1]))
             return possible_kills
         else:
             return possible_moves

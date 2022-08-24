@@ -47,7 +47,7 @@ class King(Piece):
             square.size / 5 * 3), 3
             )
 
-    def get_possible_moves(self, y, x, board, despawning, end_check):
+    def get_possible_moves(self, y, x, board, despawning, end_check, analyze):
         despawn_check = 0
         rightup_node = 0
         leftup_node = 0
@@ -175,6 +175,25 @@ class King(Piece):
                     Node(str(next_y+i) + str(next_x+i), parent=root)
                     Node(str(next_y+i) + str(next_x+i), parent=root2)
             
+            # Analyze
+
+            if analyze == True:
+                possible_analyzed_moves = []
+                s = str(root.leaves)
+                print(s)
+                for _ in range(s.count("/")):
+                    sub = s.find("/")
+                    if "/" not in s[sub+1:sub+5]:
+                        if ")" not in s[sub+1:sub+5]:
+                            possible_analyzed_moves.append((s[sub+1:sub+5]))
+                        else:
+                            possible_analyzed_moves.append((s[sub+1:sub+3]))
+                    else:
+                        possible_analyzed_moves.append((s[sub+1:sub+3]))
+                    s = s[sub+1:]
+                print(str(possible_analyzed_moves))
+                return possible_analyzed_moves
+                
             # Possible moves
 
             possible_moves = []
