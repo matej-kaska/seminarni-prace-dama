@@ -39,7 +39,7 @@ class Man(Piece):
             square.size / 5 * 3)
             )
 
-    def get_possible_moves(self, y, x, board, despawning, end_check):
+    def get_possible_moves(self, y, x, board, despawning, end_check, analyze):
         despawn_check = 0
         right_node = False
         left_node = False
@@ -121,6 +121,23 @@ class Man(Piece):
                     elif left_node == True:
                         Node(str(y+1) + str(x-1), parent=root)
                         Node(str(y+1) + str(x-1), parent=root2)
+
+            # Analyze
+
+            if analyze == True:
+                possible_analyzed_moves = []
+                s = str(root.leaves)
+                for _ in range(s.count("/")):
+                    sub = s.find("/")
+                    if "/" not in s[sub+1:sub+5]:
+                        if ")" not in s[sub+1:sub+5]:
+                            possible_analyzed_moves.append((s[sub+1:sub+5]))
+                        else:
+                            possible_analyzed_moves.append((s[sub+1:sub+3]))
+                    else:
+                        possible_analyzed_moves.append((s[sub+1:sub+3]))
+                    s = s[sub+1:] 
+                return possible_analyzed_moves
 
             # Possible moves
 

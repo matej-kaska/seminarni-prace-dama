@@ -73,16 +73,18 @@ def main():
                                 turn = "b"
                             else:
                                 turn = "w"
-                            analyze = board_analyze()
+                            analyze = board_analyze("x", turn)
                             break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
                         
                 x, y = get_mouse_pos()
                 if x < COLS and board.squares[y][x].piece is not None and board.squares[y][x].piece.team == turn:
-                    board.squares[y][x].piece.color = YELLOW
-                    selected_piece = True
-                    color_squares(y, x, DARK_YELLOW)
+                    possible_moves = board_analyze("possible_moves", turn)
+                    if str(y) + str(x) in possible_moves:
+                        board.squares[y][x].piece.color = YELLOW
+                        selected_piece = True
+                        color_squares(y, x, DARK_YELLOW)
                     if debug == True:
                         debug_render(win_debug, label_render)
         board.draw_board(WIN)
@@ -124,12 +126,12 @@ def get_mouse_pos():
     return x, y
  
 def color_squares(y, x, color):
-    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False):
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False, analyze = False):
         i = int(pos[0])
         j = int(pos[1])
         if y != i and x != j:
             board.squares[i][j].color = color
-    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True)[1:]:
+    for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = True, analyze = False)[1:]:
         color2 = YELLOW
         if color == BLACK:
             color2 = BLACK
@@ -138,7 +140,7 @@ def color_squares(y, x, color):
         board.squares[i][j].color = color2
         
 def despawn(prev_y, prev_x, pos_despawning, end):
-    board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, end))
+    board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, end, analyze = False))
 
 def king_spawn_check(y, x):
     if y == 0 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == AQUA:
@@ -192,7 +194,10 @@ def debug_render(win_debug, label_render):
     label_render.pack()
     win_debug.update()
 
-def board_analyze():
+def board_analyze(analyzer, turn):
+    possible_moves = []
+    raw_possible_moves = []
+    possible_kills = []
     white_count = 0
     black_count = 0
     white_men = 0
@@ -226,6 +231,24 @@ def board_analyze():
         return "black_win"
     if black_count == 0:
         return "white_win"
+
+    if analyzer == "possible_moves":
+        for i in range(ROWS):
+            for j in range(COLS):
+                if board.squares[i][j].piece is not None:
+                    if board.squares[i][j].piece.team == turn:
+                        raw_possible_moves.append(board.squares[i][j].piece.get_possible_moves(i, j, board, None, end_check = True, analyze = True))
+        for pos in raw_possible_moves:
+            if len(pos) > 1:
+                possible_moves.append(pos[0])
+                if len(pos) >= 2:
+                    for pos2 in pos:
+                        if len(pos2) > 2:
+                            possible_kills.append(pos[0])
+        if len(possible_kills) >= 1:
+            return possible_kills
+        else:
+            return possible_moves
 
 if __name__ == "__main__":
     main()
