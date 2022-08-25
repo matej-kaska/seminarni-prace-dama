@@ -14,10 +14,16 @@ pygame.display.set_caption("Checkers")
 board = Board()
 render = ""
 debug = False
+turn_count = 0
+kill_check = False
  
 def main():
     selected_piece = False
     turn = "w"
+    turn_counter("reset")
+    kill_checker("false")
+    prev_white_pos = []
+    prev_black_pos = []
     analyze = ""
     debug_open = False
     run = True
@@ -74,14 +80,14 @@ def main():
                                 turn = "b"
                             else:
                                 turn = "w"
-                            analyze = board_analyze("win_detection", turn)
+                            analyze = board_analyze("win_detection", turn, prev_white_pos, prev_black_pos)
                             break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
                         
                 x, y = get_mouse_pos()
                 if x < COLS and board.squares[y][x].piece is not None and board.squares[y][x].piece.team == turn:
-                    possible_moves = board_analyze("possible_moves", turn)
+                    possible_moves = board_analyze("possible_moves", turn, prev_white_pos, prev_black_pos)
                     if str(y) + str(x) in possible_moves:
                         board.squares[y][x].piece.color = YELLOW
                         selected_piece = True
@@ -118,6 +124,7 @@ def main():
                 WIN.blit(turn_label, turn_rect)
 
         if analyze == "tie":
+            turn = "x"
             WIN.blit(turn_label_black, turn_rect)
             turn_label = font.render("Tie", True, WHITE, BLACK)
             turn_rect = turn_label.get_rect()
@@ -202,7 +209,7 @@ def debug_render(win_debug, label_render):
     label_render.pack()
     win_debug.update()
 
-def board_analyze(analyzer, turn):
+def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
     if analyzer == "win_detection":
         white_count = 0
         black_count = 0
@@ -212,6 +219,9 @@ def board_analyze(analyzer, turn):
         black_kings = 0
         playable = True
         raw_possible_moves = []
+        white_pos = []
+        black_pos = []
+        
         for i in range(ROWS):
             for j in range(COLS):
                 if board.squares[i][j].piece is not None:
@@ -219,14 +229,30 @@ def board_analyze(analyzer, turn):
                         white_count = white_count + 1
                         if type(board.squares[i][j].piece) == Man:
                             white_men = white_men + 1
+                            white_pos.append(str(i) + str(j))
                         else:
                             white_kings = white_kings + 1
                     else:
                         black_count = black_count + 1
                         if type(board.squares[i][j].piece) == Man:
                             black_men = black_men + 1
+                            black_pos.append(str(i) + str(j))
                         else:
                             black_kings = black_kings + 1
+
+        if kill_check == False:
+            if white_pos == prev_white_pos and black_pos == prev_black_pos:
+                turn_counter("add")
+            else:
+                turn_counter("reset")
+        else:
+            turn_counter("reset")
+            kill_checker("false")
+
+        prev_white_pos = white_pos
+        prev_black_pos = black_pos
+        if turn_count == 15:
+            return "tie"
 
         if white_count == 0:
             return "black_win"
@@ -238,14 +264,11 @@ def board_analyze(analyzer, turn):
                 if board.squares[i][j].piece is not None:
                     if board.squares[i][j].piece.team == turn:
                         raw_possible_moves.append(board.squares[i][j].piece.get_possible_moves(i, j, board, None, end_check = True, analyze = True))
-        print(str(raw_possible_moves))
 
         for pos in raw_possible_moves:
             pos.pop(0)
-            print(str(pos))
             if len(pos) >= 1:
                 playable = True
-                print("vsak jo")
                 break
             else:
                 playable = False
@@ -277,9 +300,26 @@ def board_analyze(analyzer, turn):
                         possible_kills = []
                         kingkill = True
                     possible_kills.append(str(pos[0]) + str(pos[1]))
+            kill_checker("true")
             return possible_kills
         else:
             return possible_moves
+
+def turn_counter(function):
+    global turn_count
+    if function == "add":
+        turn_count = turn_count + 1
+    if function == "reset":
+        turn_count = 0
+    return turn_count
+
+def kill_checker(function):
+    global kill_check
+    if function == "true":
+        kill_check = True
+    if function == "false":
+        kill_check = False
+    return kill_check
 
 if __name__ == "__main__":
     main()
