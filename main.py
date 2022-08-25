@@ -15,15 +15,16 @@ board = Board()
 render = ""
 debug = False
 turn_count = 0
+tie_turn_count = 0
 kill_check = False
+prev_white_pos = []
+prev_black_pos = []
  
 def main():
     selected_piece = False
     turn = "w"
     turn_counter("reset")
     kill_checker("false")
-    prev_white_pos = []
-    prev_black_pos = []
     analyze = ""
     debug_open = False
     run = True
@@ -210,6 +211,11 @@ def debug_render(win_debug, label_render):
     win_debug.update()
 
 def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
+    font_warn = pygame.font.SysFont("inkfree", 16)
+    warn_label = font_warn.render('', True, BLACK, BLACK)
+    warn_rect = warn_label.get_rect()
+    warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+    warn_label_black = font_warn.render('XXXXXXXXXXXXXXXXXXXXXXXXXX', True, BLACK, BLACK)
     if analyzer == "win_detection":
         white_count = 0
         black_count = 0
@@ -245,15 +251,43 @@ def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
                 turn_counter("add")
             else:
                 turn_counter("reset")
+            if (white_count <= 2 and black_count == 1) or (black_count <= 2 and white_count == 1):
+                tie_turn_counter("add")
+            else:
+                tie_turn_counter("reset")
         else:
             turn_counter("reset")
+            tie_turn_counter("reset")
             kill_checker("false")
 
-        prev_white_pos = white_pos
-        prev_black_pos = black_pos
-        if turn_count == 15:
-            return "tie"
+        pos_saver(white_pos, black_pos)
 
+        if tie_turn_count > 0:
+            warn_rect = warn_label_black.get_rect()
+            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+            WIN.blit(warn_label_black, warn_rect)
+            warn_label = font_warn.render("capture in " + str(5-tie_turn_count) + " turns or tie", True, WHITE, BLACK)
+            warn_rect = warn_label.get_rect()
+            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+            WIN.blit(warn_label, warn_rect)
+        elif turn_count > 0:
+            warn_rect = warn_label_black.get_rect()
+            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+            WIN.blit(warn_label_black, warn_rect)
+            warn_label = font_warn.render("capture in " + str(15-turn_count) + " turns or tie", True, WHITE, BLACK)
+            warn_rect = warn_label.get_rect()
+            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+            WIN.blit(warn_label, warn_rect)
+        else:
+            warn_rect = warn_label_black.get_rect()
+            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+            WIN.blit(warn_label_black, warn_rect)
+
+        if turn_count == 15 or tie_turn_count == 5:
+            warn_rect = warn_label_black.get_rect()
+            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
+            WIN.blit(warn_label_black, warn_rect)
+            return "tie"
         if white_count == 0:
             return "black_win"
         if black_count == 0:
@@ -272,7 +306,6 @@ def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
                 break
             else:
                 playable = False
-    
         if playable == False:
             return "tie"
 
@@ -313,6 +346,14 @@ def turn_counter(function):
         turn_count = 0
     return turn_count
 
+def tie_turn_counter(function):
+    global tie_turn_count
+    if function == "add":
+        tie_turn_count = tie_turn_count + 1
+    if function == "reset":
+        tie_turn_count = 0
+    return tie_turn_count
+
 def kill_checker(function):
     global kill_check
     if function == "true":
@@ -320,6 +361,12 @@ def kill_checker(function):
     if function == "false":
         kill_check = False
     return kill_check
+
+def pos_saver(white, black):
+    global prev_white_pos
+    global prev_black_pos
+    prev_white_pos = white
+    prev_black_pos = black
 
 if __name__ == "__main__":
     main()
