@@ -74,7 +74,7 @@ def main():
                                 turn = "b"
                             else:
                                 turn = "w"
-                            analyze = board_analyze("x", turn)
+                            analyze = board_analyze("win_detection", turn)
                             break
                         else:
                             color_squares(prev_y, prev_x, BLACK)
@@ -82,7 +82,6 @@ def main():
                 x, y = get_mouse_pos()
                 if x < COLS and board.squares[y][x].piece is not None and board.squares[y][x].piece.team == turn:
                     possible_moves = board_analyze("possible_moves", turn)
-                    print(str(possible_moves))
                     if str(y) + str(x) in possible_moves:
                         board.squares[y][x].piece.color = YELLOW
                         selected_piece = True
@@ -117,6 +116,13 @@ def main():
                 turn_rect = turn_label.get_rect()
                 turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
                 WIN.blit(turn_label, turn_rect)
+
+        if analyze == "tie":
+            WIN.blit(turn_label_black, turn_rect)
+            turn_label = font.render("Tie", True, WHITE, BLACK)
+            turn_rect = turn_label.get_rect()
+            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
+            WIN.blit(turn_label, turn_rect)
         pygame.display.update()
  
     pygame.quit()
@@ -197,63 +203,75 @@ def debug_render(win_debug, label_render):
     win_debug.update()
 
 def board_analyze(analyzer, turn):
-    possible_moves = []
-    raw_possible_moves = []
-    possible_kills = []
-    white_count = 0
-    black_count = 0
-    white_men = 0
-    white_kings = 0
-    black_men = 0
-    black_kings = 0
-    for i in range(ROWS):
-        for j in range(COLS):
-            if board.squares[i][j].piece is not None:
-                if board.squares[i][j].piece.team == "w":
-                    white_count = white_count + 1
-                    if type(board.squares[i][j].piece) == Man:
-                        white_men = white_men + 1
+    if analyzer == "win_detection":
+        white_count = 0
+        black_count = 0
+        white_men = 0
+        white_kings = 0
+        black_men = 0
+        black_kings = 0
+        playable = True
+        raw_possible_moves = []
+        for i in range(ROWS):
+            for j in range(COLS):
+                if board.squares[i][j].piece is not None:
+                    if board.squares[i][j].piece.team == "w":
+                        white_count = white_count + 1
+                        if type(board.squares[i][j].piece) == Man:
+                            white_men = white_men + 1
+                        else:
+                            white_kings = white_kings + 1
                     else:
-                        white_kings = white_kings + 1
-                else:
-                    black_count = black_count + 1
-                    if type(board.squares[i][j].piece) == Man:
-                        black_men = black_men + 1
-                    else:
-                        black_kings = black_kings + 1
+                        black_count = black_count + 1
+                        if type(board.squares[i][j].piece) == Man:
+                            black_men = black_men + 1
+                        else:
+                            black_kings = black_kings + 1
 
-    print("Black count: "  + str(black_count))
-    print("White count: "  + str(white_count))
-    print("White men: "  + str(white_men))
-    print("White kings: "  + str(white_kings))
-    print("Black men: "  + str(black_men))
-    print("Black kings: "  + str(black_kings))
+        if white_count == 0:
+            return "black_win"
+        if black_count == 0:
+            return "white_win"
 
-    if white_count == 0:
-        return "black_win"
-    if black_count == 0:
-        return "white_win"
+        for i in range(ROWS):
+            for j in range(COLS):
+                if board.squares[i][j].piece is not None:
+                    if board.squares[i][j].piece.team == turn:
+                        raw_possible_moves.append(board.squares[i][j].piece.get_possible_moves(i, j, board, None, end_check = True, analyze = True))
+        print(str(raw_possible_moves))
+
+        for pos in raw_possible_moves:
+            pos.pop(0)
+            print(str(pos))
+            if len(pos) >= 1:
+                playable = True
+                print("vsak jo")
+                break
+            else:
+                playable = False
+    
+        if playable == False:
+            return "tie"
 
     if analyzer == "possible_moves":
+        possible_moves = []
+        raw_possible_moves = []
+        possible_kills = []
         for i in range(ROWS):
             for j in range(COLS):
                 if board.squares[i][j].piece is not None:
                     if board.squares[i][j].piece.team == turn:
                         raw_possible_moves.append(board.squares[i][j].piece.get_possible_moves(i, j, board, None, end_check = True, analyze = True))
         for pos in raw_possible_moves:
-            print(str(pos))
             if len(pos) > 1:
                 possible_moves.append(pos[0])
                 if len(pos) >= 2:
                     for pos2 in pos:
                         if len(pos2) > 2:
                             possible_kills.append(pos[0])
-        print(str(possible_moves))
-        print(str(possible_kills))
         if len(possible_kills) >= 1:
             kingkill = False
             for pos in possible_kills:
-                print("POS: " + pos)
                 if type(board.squares[int(pos[0])][int(pos[1])].piece) == King:
                     if kingkill == False:
                         possible_kills = []

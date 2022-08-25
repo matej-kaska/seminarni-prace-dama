@@ -180,7 +180,6 @@ class King(Piece):
             if analyze == True:
                 possible_analyzed_moves = []
                 s = str(root.leaves)
-                print(s)
                 for _ in range(s.count("/")):
                     sub = s.find("/")
                     if "/" not in s[sub+1:sub+5]:
@@ -191,7 +190,6 @@ class King(Piece):
                     else:
                         possible_analyzed_moves.append((s[sub+1:sub+3]))
                     s = s[sub+1:]
-                print(str(possible_analyzed_moves))
                 return possible_analyzed_moves
                 
             # Possible moves
