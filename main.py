@@ -33,9 +33,9 @@ def main():
     run = True
     clock = pygame.time.Clock()
     pygame.font.init()
-    font = pygame.font.SysFont("inkfree", 26)
-    font.bold = True
-    turn_label_black = font.render('XXXXXXXXXXXX', True, BLACK, BLACK)
+    font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
+    font = pygame.font.SysFont("inkfree", 26, bold=True)
+    turn_label_black = font.render("XXXXXXXXXXXX", True, BLACK, BLACK)
     turn_label = font.render("Blue's Turn", True, AQUA, BLACK)
     turn_rect = turn_label.get_rect()
     turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
@@ -46,10 +46,9 @@ def main():
             if debug_open == False:
                 debug_open = True
                 win_debug = Tk()
-                win_debug.title("Dáma - debug")
                 win_debug.geometry("400x400")
                 win_debug.overrideredirect(True)
-                label_render = Label(win_debug, text=export_render(), font=('Helvetica 14 bold'), justify=LEFT)
+                label_render = Label(win_debug, text=export_render(), font=("Helvetica 14 bold"), justify=LEFT)
                 win_debug.update()
 
         for event in pygame.event.get():
@@ -67,9 +66,9 @@ def main():
                                 color_squares(prev_y, prev_x, BLACK)
                                 despawn(prev_y, prev_x, str(y) + str(x), False)
                                 board.squares[y][x].piece = board.squares[prev_y][prev_x].piece
+                                board.squares[prev_y][prev_x].piece = None
                                 color_squares(y, x, DARK_YELLOW)
                                 board.squares[y][x].piece.color = YELLOW
-                                board.squares[prev_y][prev_x].piece = None
                                 if debug == True:
                                     debug_render(win_debug, label_render)
                                 break
@@ -100,16 +99,12 @@ def main():
                         debug_render(win_debug, label_render)
 
         if red_is_bot == True and turn == "b" and analyze != "white_win" and analyze != "black_win":
-            WIN.blit(turn_label_black, turn_rect)
             turn_label = font.render("Red's Turn", True, CRIMSON, BLACK)
-            turn_rect = turn_label.get_rect()
-            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
-            WIN.blit(turn_label, turn_rect)
+            renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
             possible_moves = board_analyze("possible_moves", turn, prev_white_pos, prev_black_pos)
             bot_piece = random.choice(possible_moves)
             bot_y = int(bot_piece[0])
             bot_x = int(bot_piece[1])
-            board.squares[bot_y][bot_x].piece.color = YELLOW
             pos = color_squares(bot_y, bot_x, DARK_YELLOW)
             pos = random.choice(pos)
             bot_next_y = int(pos[0])
@@ -124,42 +119,27 @@ def main():
             analyze = board_analyze("win_detection", turn, prev_white_pos, prev_black_pos)
         
         board.draw_board(WIN)
-        draw_menu()
+        draw_menu(font_bot)
         if turn == "w":
-            WIN.blit(turn_label_black, turn_rect)
             turn_label = font.render("Blue's Turn", True, AQUA, BLACK)
-            turn_rect = turn_label.get_rect()
-            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
-            WIN.blit(turn_label, turn_rect)
+            renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
         else:
-            WIN.blit(turn_label_black, turn_rect)
             turn_label = font.render("Red's Turn", True, CRIMSON, BLACK)
-            turn_rect = turn_label.get_rect()
-            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
-            WIN.blit(turn_label, turn_rect)
+            renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
         
         if analyze == "white_win" or analyze == "black_win":
             turn = "x"
             if analyze == "white_win":
-                WIN.blit(turn_label_black, turn_rect)
                 turn_label = font.render("Blue won", True, AQUA, BLACK)
-                turn_rect = turn_label.get_rect()
-                turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
-                WIN.blit(turn_label, turn_rect)
+                renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
             if analyze == "black_win":
-                WIN.blit(turn_label_black, turn_rect)
                 turn_label = font.render("Red won", True, CRIMSON, BLACK)
-                turn_rect = turn_label.get_rect()
-                turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
-                WIN.blit(turn_label, turn_rect)
+                renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
 
         if analyze == "tie":
             turn = "x"
-            WIN.blit(turn_label_black, turn_rect)
             turn_label = font.render("Tie", True, WHITE, BLACK)
-            turn_rect = turn_label.get_rect()
-            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
-            WIN.blit(turn_label, turn_rect)
+            renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
         pygame.display.update()
  
     pygame.quit()
@@ -201,6 +181,12 @@ def text_objects(text, font):
     text_surface = font.render(text, True, BLACK)
     return text_surface, text_surface.get_rect()
 
+def checkbox_renderer(pos, font_bot):
+    text_surface = font_bot.render("Red is bot", True, BLACK)
+    text_rect = text_surface.get_rect()
+    text_rect.center = pos
+    WIN.blit(text_surface, text_rect)
+
 def button(msg, x, y, width, height, inactive_color, active_color):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
@@ -232,42 +218,33 @@ def button(msg, x, y, width, height, inactive_color, active_color):
     text_rect.center = ((x + width/2), (y + height/2))
     WIN.blit(text_surf, text_rect)
 
-def checkbox(msg, x , y, width, height, inactive_color, active_color):
+def checkbox(x , y, width, height, inactive_color, active_color, font_bot):
     mouse = pygame.mouse.get_pos()
     global red_is_bot
     global once
     if once == False:
         pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
-        font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
-        text_surf, text_rect = text_objects(msg, font_bot)
-        text_rect.center = ((x + width/2), (y + height/2))
-        WIN.blit(text_surf, text_rect)
+        checkbox_renderer(((x + width/2), (y + height/2)), font_bot)
         once = True
     if x + width > mouse[0] > x and y + height > mouse[1] > y:
         click = pygame.mouse.get_pressed()
         if click[0]:
             if red_is_bot == False:
                 pygame.draw.rect(WIN, active_color, (x, y, width, height))
-                font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
-                text_surf, text_rect = text_objects(msg, font_bot)
-                text_rect.center = ((x + width/2), (y + height/2))
-                WIN.blit(text_surf, text_rect)
+                checkbox_renderer(((x + width/2), (y + height/2)), font_bot)
                 red_is_bot = True
             else:
                 pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
-                font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
-                text_surf, text_rect = text_objects(msg, font_bot)
-                text_rect.center = ((x + width/2), (y + height/2))
-                WIN.blit(text_surf, text_rect)
+                checkbox_renderer(((x + width/2), (y + height/2)), font_bot)
                 red_is_bot = False
             pygame.time.wait(100)
 
-def draw_menu():
+def draw_menu(font_bot):
     button("LOAD", 850, 50, 100, 50, WHITE, YELLOW)
     button("SAVE", 850, 150, 100, 50, WHITE, YELLOW)
     button("DEBUG", 850, 250, 100, 50, WHITE, YELLOW)
     button("RESTART", 850, 450, 100, 50, WHITE, YELLOW)
-    checkbox("Red is bot", 850, 550, 100, 50, RED, GREEN)
+    checkbox(850, 550, 100, 50, RED, GREEN, font_bot)
 
 def debug_render(win_debug, label_render):
     label_render.config(text=export_render())
@@ -279,14 +256,10 @@ def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
     warn_label = font_warn.render('', True, BLACK, BLACK)
     warn_rect = warn_label.get_rect()
     warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-    warn_label_black = font_warn.render('XXXXXXXXXXXXXXXXXXXXXXXXXX', True, BLACK, BLACK)
+    warn_label_black = font_warn.render("XXXXXXXXXXXXXXXXXXXXXXXXXX", True, BLACK, BLACK)
     if analyzer == "win_detection":
         white_count = 0
         black_count = 0
-        white_men = 0
-        white_kings = 0
-        black_men = 0
-        black_kings = 0
         playable = True
         raw_possible_moves = []
         white_pos = []
@@ -298,17 +271,11 @@ def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
                     if board.squares[i][j].piece.team == "w":
                         white_count = white_count + 1
                         if type(board.squares[i][j].piece) == Man:
-                            white_men = white_men + 1
                             white_pos.append(str(i) + str(j))
-                        else:
-                            white_kings = white_kings + 1
                     else:
                         black_count = black_count + 1
                         if type(board.squares[i][j].piece) == Man:
-                            black_men = black_men + 1
                             black_pos.append(str(i) + str(j))
-                        else:
-                            black_kings = black_kings + 1
 
         if kill_check == False:
             if white_pos == prev_white_pos and black_pos == prev_black_pos:
@@ -327,30 +294,16 @@ def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
         pos_saver(white_pos, black_pos)
 
         if tie_turn_count > 0:
-            warn_rect = warn_label_black.get_rect()
-            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-            WIN.blit(warn_label_black, warn_rect)
             warn_label = font_warn.render("capture in " + str(5-tie_turn_count) + " turns or tie", True, WHITE, BLACK)
-            warn_rect = warn_label.get_rect()
-            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-            WIN.blit(warn_label, warn_rect)
+            renderer(warn_label_black, warn_label, warn_rect, ((WIDTH - 800) / 2 + 800, 405))
         elif turn_count > 0:
-            warn_rect = warn_label_black.get_rect()
-            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-            WIN.blit(warn_label_black, warn_rect)
             warn_label = font_warn.render("capture in " + str(15-turn_count) + " turns or tie", True, WHITE, BLACK)
-            warn_rect = warn_label.get_rect()
-            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-            WIN.blit(warn_label, warn_rect)
+            renderer(warn_label_black, warn_label, warn_rect, ((WIDTH - 800) / 2 + 800, 405))
         else:
-            warn_rect = warn_label_black.get_rect()
-            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-            WIN.blit(warn_label_black, warn_rect)
+            renderer(warn_label_black, warn_label_black, warn_rect, ((WIDTH - 800) / 2 + 800, 405))
 
         if turn_count == 15 or tie_turn_count == 5:
-            warn_rect = warn_label_black.get_rect()
-            warn_rect.center = ((WIDTH - 800) / 2 + 800, 405)
-            WIN.blit(warn_label_black, warn_rect)
+            renderer(warn_label_black, warn_label_black, warn_rect, ((WIDTH - 800) / 2 + 800, 405))
             return "tie"
         if white_count == 0:
             return "black_win"
@@ -431,6 +384,12 @@ def pos_saver(white, black):
     global prev_black_pos
     prev_white_pos = white
     prev_black_pos = black
+
+def renderer(label_black, label, rect, pos):
+    WIN.blit(label_black, rect)
+    rect = label.get_rect()
+    rect.center = pos
+    WIN.blit(label, rect)
 
 if __name__ == "__main__":
     main()
