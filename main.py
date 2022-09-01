@@ -1,7 +1,8 @@
 import pygame
 import math
+import random
 from tkinter import *
-from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS, COLS, WHITE
+from checkers.constants import AQUA, CRIMSON, SQUARE_SIZE, WIDTH, HEIGHT, YELLOW, BLACK, DARK_YELLOW, ROWS, COLS, WHITE, RED, GREEN
 from checkers.board import Board
 from checkers.man import Man
 from checkers.king import King
@@ -19,6 +20,8 @@ tie_turn_count = 0
 kill_check = False
 prev_white_pos = []
 prev_black_pos = []
+red_is_bot = False
+once = False
  
 def main():
     selected_piece = False
@@ -95,6 +98,31 @@ def main():
                         color_squares(y, x, DARK_YELLOW)
                     if debug == True:
                         debug_render(win_debug, label_render)
+
+        if red_is_bot == True and turn == "b" and analyze != "white_win" and analyze != "black_win":
+            WIN.blit(turn_label_black, turn_rect)
+            turn_label = font.render("Red's Turn", True, CRIMSON, BLACK)
+            turn_rect = turn_label.get_rect()
+            turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
+            WIN.blit(turn_label, turn_rect)
+            possible_moves = board_analyze("possible_moves", turn, prev_white_pos, prev_black_pos)
+            bot_piece = random.choice(possible_moves)
+            bot_y = int(bot_piece[0])
+            bot_x = int(bot_piece[1])
+            board.squares[bot_y][bot_x].piece.color = YELLOW
+            pos = color_squares(bot_y, bot_x, DARK_YELLOW)
+            pos = random.choice(pos)
+            bot_next_y = int(pos[0])
+            bot_next_x = int(pos[1])
+            color_squares(bot_y, bot_x, BLACK)
+            despawn(bot_y, bot_x, str(bot_next_y) + str(bot_next_x), True)
+            board.squares[bot_next_y][bot_next_x].piece = board.squares[bot_y][bot_x].piece
+            board.squares[bot_y][bot_x].piece = None
+            board.squares[bot_next_y][bot_next_x].piece.color = board.squares[bot_next_y][bot_next_x].piece.default_color
+            king_spawn_check(bot_next_y, bot_next_x)
+            turn = "w"
+            analyze = board_analyze("win_detection", turn, prev_white_pos, prev_black_pos)
+        
         board.draw_board(WIN)
         draw_menu()
         if turn == "w":
@@ -111,6 +139,7 @@ def main():
             WIN.blit(turn_label, turn_rect)
         
         if analyze == "white_win" or analyze == "black_win":
+            turn = "x"
             if analyze == "white_win":
                 WIN.blit(turn_label_black, turn_rect)
                 turn_label = font.render("Blue won", True, AQUA, BLACK)
@@ -142,6 +171,7 @@ def get_mouse_pos():
     return x, y
  
 def color_squares(y, x, color):
+    end_pos = []
     for pos in board.squares[y][x].piece.get_possible_moves(y, x, board, None, end_check = False, analyze = False):
         i = int(pos[0])
         j = int(pos[1])
@@ -154,7 +184,10 @@ def color_squares(y, x, color):
         i = int(pos[0])
         j = int(pos[1])
         board.squares[i][j].color = color2
-        
+        end_pos.append(pos)
+    if red_is_bot == True:
+        return end_pos
+
 def despawn(prev_y, prev_x, pos_despawning, end):
     board.despawn_piece(board.squares[prev_y][prev_x].piece.get_possible_moves(prev_y, prev_x, board, pos_despawning, end, analyze = False))
 
@@ -199,11 +232,42 @@ def button(msg, x, y, width, height, inactive_color, active_color):
     text_rect.center = ((x + width/2), (y + height/2))
     WIN.blit(text_surf, text_rect)
 
+def checkbox(msg, x , y, width, height, inactive_color, active_color):
+    mouse = pygame.mouse.get_pos()
+    global red_is_bot
+    global once
+    if once == False:
+        pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
+        font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
+        text_surf, text_rect = text_objects(msg, font_bot)
+        text_rect.center = ((x + width/2), (y + height/2))
+        WIN.blit(text_surf, text_rect)
+        once = True
+    if x + width > mouse[0] > x and y + height > mouse[1] > y:
+        click = pygame.mouse.get_pressed()
+        if click[0]:
+            if red_is_bot == False:
+                pygame.draw.rect(WIN, active_color, (x, y, width, height))
+                font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
+                text_surf, text_rect = text_objects(msg, font_bot)
+                text_rect.center = ((x + width/2), (y + height/2))
+                WIN.blit(text_surf, text_rect)
+                red_is_bot = True
+            else:
+                pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
+                font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
+                text_surf, text_rect = text_objects(msg, font_bot)
+                text_rect.center = ((x + width/2), (y + height/2))
+                WIN.blit(text_surf, text_rect)
+                red_is_bot = False
+            pygame.time.wait(100)
+
 def draw_menu():
     button("LOAD", 850, 50, 100, 50, WHITE, YELLOW)
     button("SAVE", 850, 150, 100, 50, WHITE, YELLOW)
     button("DEBUG", 850, 250, 100, 50, WHITE, YELLOW)
     button("RESTART", 850, 450, 100, 50, WHITE, YELLOW)
+    checkbox("Red is bot", 850, 550, 100, 50, RED, GREEN)
 
 def debug_render(win_debug, label_render):
     label_render.config(text=export_render())
