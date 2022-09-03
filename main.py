@@ -7,12 +7,16 @@ from checkers.board import Board
 from checkers.man import Man
 from checkers.king import King
 from checkers.render import export_render
+from checkers.csv_handler import CSV_Handler
  
-FPS = 60
- 
+FPS = 60 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+
 pygame.display.set_caption("Checkers")
+
 board = Board()
+csv_handler = CSV_Handler()
+
 render = ""
 debug = False
 turn_count = 0
@@ -196,11 +200,11 @@ def button(msg, x, y, width, height, inactive_color, active_color):
 
         if click[0] == 1:
             if msg == "LOAD":
-                board.add_pieces_from_csv()
+                csv_handler.load_from_csv(board)
                 main()
                 return
             elif msg == "SAVE":
-                board.save_game()
+                csv_handler.save_to_csv(board)
                 return
             elif msg == "DEBUG":
                 global debug
