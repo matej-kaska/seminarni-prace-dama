@@ -32,12 +32,12 @@ kill_check = False
 prev_white_pos = []
 prev_black_pos = []
 red_is_bot = False
-once = False
  
 def main():
     selected_piece = False
     turn = "w"
     turn_counter("reset")
+    tie_turn_counter("reset")
     kill_checker("false")
     analyze = ""
     debug_open = False
@@ -50,6 +50,7 @@ def main():
     turn_rect = turn_label.get_rect()
     turn_rect.center = ((WIDTH - 800) / 2 + 800, 375)
     WIN.blit(turn_label, turn_rect)
+    board_analyze("win_detection", "", "", "")
     while run:
         clock.tick(FPS)
         if debug == True:
@@ -115,20 +116,21 @@ def main():
             turn_label = font.render("Red's Turn", True, CRIMSON, BLACK)
             renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
             possible_moves = board_analyze("possible_moves", turn, prev_white_pos, prev_black_pos)
-            bot_piece = random.choice(possible_moves)
-            bot_y = int(bot_piece[0])
-            bot_x = int(bot_piece[1])
-            pos = color_squares(bot_y, bot_x, DARK_YELLOW)
-            pos = random.choice(pos)
-            bot_next_y = int(pos[0])
-            bot_next_x = int(pos[1])
-            color_squares(bot_y, bot_x, BLACK)
-            despawn(bot_y, bot_x, str(bot_next_y) + str(bot_next_x), True)
-            board.squares[bot_next_y][bot_next_x].piece = board.squares[bot_y][bot_x].piece
-            board.squares[bot_y][bot_x].piece = None
-            board.squares[bot_next_y][bot_next_x].piece.color = board.squares[bot_next_y][bot_next_x].piece.default_color
-            king_spawn_check(bot_next_y, bot_next_x)
-            turn = "w"
+            if possible_moves != []:
+                bot_piece = random.choice(possible_moves)
+                bot_y = int(bot_piece[0])
+                bot_x = int(bot_piece[1])
+                pos = color_squares(bot_y, bot_x, DARK_YELLOW)
+                pos = random.choice(pos)
+                bot_next_y = int(pos[0])
+                bot_next_x = int(pos[1])
+                color_squares(bot_y, bot_x, BLACK)
+                despawn(bot_y, bot_x, str(bot_next_y) + str(bot_next_x), True)
+                board.squares[bot_next_y][bot_next_x].piece = board.squares[bot_y][bot_x].piece
+                board.squares[bot_y][bot_x].piece = None
+                board.squares[bot_next_y][bot_next_x].piece.color = board.squares[bot_next_y][bot_next_x].piece.default_color
+                king_spawn_check(bot_next_y, bot_next_x)
+                turn = "w"
             analyze = board_analyze("win_detection", turn, prev_white_pos, prev_black_pos)
         
         board.draw_board(WIN)
