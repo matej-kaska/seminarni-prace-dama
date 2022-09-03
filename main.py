@@ -289,7 +289,7 @@ def board_analyze(analyzer, turn, prev_white_pos, prev_black_pos):
         else:
             renderer(warn_label_black, warn_label_black, warn_rect, ((WIDTH - 800) / 2 + 800, 405))
 
-        if turn_count == 15 or tie_turn_count == 5:
+        if turn_count >= 15 or tie_turn_count >= 5:
             renderer(warn_label_black, warn_label_black, warn_rect, ((WIDTH - 800) / 2 + 800, 405))
             return "tie"
         if white_count == 0:
