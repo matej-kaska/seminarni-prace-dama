@@ -12,10 +12,6 @@ class Board:
     def squares(self):
         return self._squares
 
-    @squares.setter
-    def squares(self, val):
-        self._squares = val
-
     def __create_board(self):
         self.__add_squares() # _ = protected | __ = private
         self.__add_labels()

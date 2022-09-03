@@ -1,5 +1,5 @@
 import pygame
-from .constants import SQUARE_SIZE, YELLOW
+from .constants import SQUARE_SIZE
 
 class Square:
     def __init__(self, x, y, color):
