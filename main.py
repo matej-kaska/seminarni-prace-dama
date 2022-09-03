@@ -8,6 +8,7 @@ from checkers.man import Man
 from checkers.king import King
 from checkers.render import export_render
 from checkers.csv_handler import CSV_Handler
+from checkers.button import Button
  
 FPS = 60 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -15,6 +16,12 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Checkers")
 
 board = Board()
+load_btn = Button(WHITE, YELLOW, 850, 50, 100, 50, "LOAD")
+save_btn = Button(WHITE, YELLOW, 850, 150, 100, 50, "SAVE")
+debug_btn = Button(WHITE, YELLOW, 850, 250, 100, 50, "DEBUG")
+restart_btn = Button(WHITE, YELLOW, 850, 450, 100, 50, "RESTART")
+checkbox_btn = Button(RED, YELLOW, 850, 550, 100, 50, "Red is bot")
+buttons = [load_btn, save_btn, debug_btn, restart_btn, checkbox_btn]
 csv_handler = CSV_Handler()
 
 render = ""
@@ -37,7 +44,6 @@ def main():
     run = True
     clock = pygame.time.Clock()
     pygame.font.init()
-    font_bot = pygame.font.SysFont("inkfree", 16, bold=False)
     font = pygame.font.SysFont("inkfree", 26, bold=True)
     turn_label_black = font.render("XXXXXXXXXXXX", True, BLACK, BLACK)
     turn_label = font.render("Blue's Turn", True, AQUA, BLACK)
@@ -93,6 +99,7 @@ def main():
                             color_squares(prev_y, prev_x, BLACK)
                         
                 x, y = get_mouse_pos()
+                menu_buttons()
                 if x < COLS and board.squares[y][x].piece is not None and board.squares[y][x].piece.team == turn:
                     possible_moves = board_analyze("possible_moves", turn, prev_white_pos, prev_black_pos)
                     if str(y) + str(x) in possible_moves:
@@ -101,6 +108,8 @@ def main():
                         color_squares(y, x, DARK_YELLOW)
                     if debug == True:
                         debug_render(win_debug, label_render)
+            elif event.type == pygame.MOUSEMOTION:
+                highlight_buttons()
 
         if red_is_bot == True and turn == "b" and analyze != "white_win" and analyze != "black_win":
             turn_label = font.render("Red's Turn", True, CRIMSON, BLACK)
@@ -123,7 +132,8 @@ def main():
             analyze = board_analyze("win_detection", turn, prev_white_pos, prev_black_pos)
         
         board.draw_board(WIN)
-        draw_menu(font_bot)
+        for btn in buttons:
+            btn.draw(WIN)
         if turn == "w":
             turn_label = font.render("Blue's Turn", True, AQUA, BLACK)
             renderer(turn_label_black, turn_label, turn_rect, ((WIDTH - 800) / 2 + 800, 375))
@@ -153,6 +163,46 @@ def get_mouse_pos():
     x = math.floor(x / SQUARE_SIZE)
     y = math.floor(y / SQUARE_SIZE)
     return x, y
+
+def menu_buttons():
+    pos = pygame.mouse.get_pos()
+    for btn in buttons:
+        if btn.is_over(pos):
+            if btn.text == "LOAD":
+                csv_handler.load_from_csv(board)
+                main()
+                return
+            elif btn.text == "SAVE":
+                csv_handler.save_to_csv(board)
+                return
+            elif btn.text == "DEBUG":
+                global debug
+                debug = True
+                return
+            elif btn.text == "RESTART":
+                board.restart_board()
+                main()
+                return
+            elif btn.text == "Red is bot":
+                global red_is_bot
+                if btn.default_color == RED:
+                    btn.color = GREEN
+                    btn.default_color = btn.color
+                    red_is_bot = TRUE
+                    return
+                else:
+                    btn.color = RED
+                    btn.default_color = btn.color
+                    red_is_bot = FALSE
+                    return
+                
+def highlight_buttons():
+    pos = pygame.mouse.get_pos()
+    for btn in buttons:
+        if btn.is_over(pos) and btn.text != "Red is bot":
+            btn.color = btn.highlight_color
+        else:
+            btn.color = btn.default_color
  
 def color_squares(y, x, color):
     end_pos = []
@@ -180,75 +230,6 @@ def king_spawn_check(y, x):
         board.spawn_king(y, x)
     if y == ROWS - 1 and type(board.squares[y][x].piece) == Man and board.squares[y][x].piece.color == CRIMSON:
         board.spawn_king(y, x)
-
-def text_objects(text, font):
-    text_surface = font.render(text, True, BLACK)
-    return text_surface, text_surface.get_rect()
-
-def checkbox_renderer(pos, font_bot):
-    text_surface = font_bot.render("Red is bot", True, BLACK)
-    text_rect = text_surface.get_rect()
-    text_rect.center = pos
-    WIN.blit(text_surface, text_rect)
-
-def button(msg, x, y, width, height, inactive_color, active_color):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-
-    if x + width > mouse[0] > x and y + height > mouse[1] > y:
-        pygame.draw.rect(WIN, active_color, (x, y, width, height))
-
-        if click[0] == 1:
-            if msg == "LOAD":
-                csv_handler.load_from_csv(board)
-                main()
-                return
-            elif msg == "SAVE":
-                csv_handler.save_to_csv(board)
-                return
-            elif msg == "DEBUG":
-                global debug
-                debug = True
-                return
-            elif msg == "RESTART":
-                board.restart_board()
-                main()
-                return
-    else:
-        pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
-
-    font = pygame.font.SysFont("inkfree", 16)
-    text_surf, text_rect = text_objects(msg, font)
-    text_rect.center = ((x + width/2), (y + height/2))
-    WIN.blit(text_surf, text_rect)
-
-def checkbox(x , y, width, height, inactive_color, active_color, font_bot):
-    mouse = pygame.mouse.get_pos()
-    global red_is_bot
-    global once
-    if once == False:
-        pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
-        checkbox_renderer(((x + width/2), (y + height/2)), font_bot)
-        once = True
-    if x + width > mouse[0] > x and y + height > mouse[1] > y:
-        click = pygame.mouse.get_pressed()
-        if click[0]:
-            if red_is_bot == False:
-                pygame.draw.rect(WIN, active_color, (x, y, width, height))
-                checkbox_renderer(((x + width/2), (y + height/2)), font_bot)
-                red_is_bot = True
-            else:
-                pygame.draw.rect(WIN, inactive_color, (x, y, width, height))
-                checkbox_renderer(((x + width/2), (y + height/2)), font_bot)
-                red_is_bot = False
-            pygame.time.wait(100)
-
-def draw_menu(font_bot):
-    button("LOAD", 850, 50, 100, 50, WHITE, YELLOW)
-    button("SAVE", 850, 150, 100, 50, WHITE, YELLOW)
-    button("DEBUG", 850, 250, 100, 50, WHITE, YELLOW)
-    button("RESTART", 850, 450, 100, 50, WHITE, YELLOW)
-    checkbox(850, 550, 100, 50, RED, GREEN, font_bot)
 
 def debug_render(win_debug, label_render):
     label_render.config(text=export_render())
